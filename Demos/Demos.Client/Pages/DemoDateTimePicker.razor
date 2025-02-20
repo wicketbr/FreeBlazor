@@ -1,0 +1,141 @@
+﻿@page "/DateTimePicker"
+
+<h1>DateTime Picker</h1>
+
+<div class="mb-2 alert alert-info">
+    A DateTime picker built using native browser input controls. Includes options for converting from UTC to local time and back.
+    The input type is determined based on the data type specified in the TValue property.
+    Below are examples of each of the supported data types and the difference in how the control is rendered.
+</div>
+
+<div class="mb-2">
+    <h2>DateTime? (default behavior)</h2>
+    <DateTimePicker 
+        Class="form-control"
+        ClearButtonText=""
+        ClearButtonTitle="Clear"
+        OnUpdate="@((DateTime? v) => _dateTimeNullable = v)"
+        OnValueChanged="StateHasChanged"
+        TValue="DateTime?"
+        Value="_dateTimeNullable"
+    />
+    <div class="mb-2">
+        <button type="button" class="btn btn-primary" @onclick="@(() => _dateTimeNullable = DateTime.Now)">
+            Set Value in Code
+        </button>
+        <button type="button" class="btn btn-primary" @onclick="@(() => _dateTimeNullable = null)">
+            Clear Value in Code
+        </button>
+    </div>
+    
+    @if (_dateTimeNullable.HasValue) {
+        <div>
+            <strong>Value: </strong><span>@_dateTimeNullable.ToString()</span>
+        </div>
+    }
+</div>
+
+<hr />
+
+<div class="mb-2">
+    <h2>DateTime</h2>
+    <DateTimePicker 
+        Class="form-control"
+        ClearButtonText=""
+        ClearButtonTitle="Clear"
+        ConvertFromUtcToLocalTime="true"
+        NowButtonText=""
+        NowButtonTitle="Now"
+        OnUpdate="@((DateTime v) => { _dateTime = v; StateHasChanged(); })"
+        ShowClearButton="true"
+        ShowNowButton="true"
+        TValue="DateTime"
+        Value="_dateTime"
+    />
+    <div>
+        <strong>Value: </strong><span>@_dateTime.ToString()</span>
+    </div>
+</div>
+
+<hr />
+
+<div class="mb-2">
+    <h2>DateOnly?</h2>
+    <DateTimePicker 
+        Class="form-control"
+        OnUpdate="@((DateOnly? v) => { _dateOnlyNullable = v; StateHasChanged(); })"
+        ShowClearButton="true"
+        ShowNowButton="true"
+        TValue="DateOnly?"
+        Value="_dateOnlyNullable"
+    />
+    @if (_dateOnlyNullable.HasValue) {
+        <div>
+            <strong>Value: </strong><span>@_dateOnlyNullable.ToString()</span>
+        </div>
+    }
+</div>
+
+<hr />
+
+<div class="mb-2">
+    <h2>DateOnly</h2>
+    <DateTimePicker 
+        Class="form-control"
+        OnUpdate="@((DateOnly v) => { _dateOnly = v; StateHasChanged(); })"
+        ShowClearButton="true"
+        ShowNowButton="true"
+        TValue="DateOnly"
+        Value="_dateOnly"
+    />
+    <div>
+        <strong>Value: </strong><span>@_dateOnly.ToString()</span>
+    </div>
+</div>
+
+<hr />
+
+<div class="mb-2">
+    <h2>TimeOnly?</h2>
+    <DateTimePicker 
+        Class="form-control"
+        OnUpdate="@((TimeOnly? v) => { _timeOnlyNullable = v; StateHasChanged(); })"
+        ShowClearButton="true"
+        ShowNowButton="true"
+        TValue="TimeOnly?"
+        Value="_timeOnlyNullable"
+    />
+    @if (_timeOnlyNullable.HasValue) {
+        <div>
+            <strong>Value: </strong><span>@_timeOnlyNullable.ToString()</span>
+        </div>
+    }
+</div>
+
+<hr />
+
+<div class="mb-2">
+    <h2>TimeOnly</h2>
+    <DateTimePicker 
+        Class="form-control"
+        OnUpdate="@((TimeOnly v) => { _timeOnly = v; StateHasChanged(); })"
+        ShowClearButton="true"
+        ShowNowButton="true"
+        TValue="TimeOnly"
+        Value="_timeOnly"
+    />
+    <div>
+        <strong>Value: </strong><span>@_timeOnly.ToString()</span>
+    </div>
+</div>
+
+@code {
+    protected DateTime _dateTime = DateTime.Now;
+    protected DateTime? _dateTimeNullable = null;
+
+    protected DateOnly _dateOnly = DateOnly.FromDateTime(DateTime.Now);
+    protected DateOnly? _dateOnlyNullable = DateOnly.FromDateTime(DateTime.Now);
+
+    protected TimeOnly _timeOnly = TimeOnly.FromDateTime(DateTime.Now);
+    protected TimeOnly? _timeOnlyNullable = null;
+}

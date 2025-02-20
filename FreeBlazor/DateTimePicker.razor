@@ -1,0 +1,185 @@
+﻿@typeparam TValue
+
+@if (WrapInTable) {
+    <style>
+        table.datetime-picker tbody tr td {
+            padding-right: .2em;
+        }
+
+            table.datetime-picker tbody tr td:last-child {
+                padding-right: 0;
+            }
+
+            table.datetime-picker tbody tr td input[type="datetime-local"] {
+                width: 250px;
+                min-width: 250px;
+            }
+
+            table.datetime-picker tbody tr td input[type="date"] {
+                width: 150px;
+                min-width: 150px;
+            }
+
+            table.datetime-picker tbody tr td input[type="time"] {
+                width: 130px;
+                min-width: 130px;
+            }
+
+            table.datetime-picker tbody tr td span.button-text {
+                margin-left: .2em;
+            }
+    </style>
+
+    <table class="@TableClass" id="@(_id + "_table")">
+        <tbody>
+            <tr>
+                @switch (_dataType) {
+                    case "dateonly":
+                        <td class="datetimepicker-date">
+                            <input id="@_id"
+                                   type="date"
+                                   class="@InputClass"
+                                   value="@_valueDateOnly"
+                                   @onchange="OnChangeDateTime"
+                                   required="@(!_nullable)"
+                                   step="@InputStep"
+                                   min="@InputMin"
+                                   max="@InputMax" />
+                        </td>
+                        break;
+
+                    case "timeonly":
+                        <td class="datetimepicker-time">
+                            <input id="@_id"
+                                   type="time"
+                                   class="@InputClass"
+                                   value="@_valueTimeOnly"
+                                   @onchange="OnChangeTime"
+                                   required="@(!_nullable)"
+                                   step="@InputStep"
+                                   min="@InputMin"
+                                   max="@InputMax" />
+                        </td>
+                        break;
+
+                    default:
+                        <td class="datetimepicker-date">
+                            <input id="@_id"
+                                   type="datetime-local"
+                                   class="@InputClass"
+                                   value="@_valueDateTime"
+                                   @onchange="OnChangeDateTime"
+                                   required="@(!_nullable)"
+                                   step="@InputStep"
+                                   min="@InputMin"
+                                   max="@InputMax" />
+                        </td>
+                        break;
+                }
+
+                @if (ShowNowButton) {
+                    <td class="datetimepicker-now">
+                        <button type="button" class="@NowButtonClass" @onclick="SetNow" title="@NowButtonTitle">
+                            @if (!String.IsNullOrWhiteSpace(NowButtonIcon)) {
+                                if (NowButtonIcon.Contains("<")) {
+                                    @((MarkupString)NowButtonIcon)
+                                } else {
+                                    <i class="button-icon @NowButtonIcon"></i>
+                                }
+                            }
+                            @if (!String.IsNullOrWhiteSpace(NowButtonText)) {
+                                <span class="button-text">@NowButtonText</span>
+                            }
+                        </button>
+                    </td>
+                }
+
+                @if (ShowClearButton && _nullable) {
+                    <td class="datetimepicker-clear">
+                        <button type="button" class="@ClearButtonClass" @onclick="Clear" title="@ClearButtonTitle">
+                            @if (!String.IsNullOrWhiteSpace(ClearButtonIcon)) {
+                                if (ClearButtonIcon.Contains("<")) {
+                                    @((MarkupString)ClearButtonIcon)
+                                } else {
+                                    <i class="button-icon @ClearButtonIcon"></i>
+                                }
+                            }
+                            @if (!String.IsNullOrWhiteSpace(ClearButtonText)) {
+                                <span class="button-text">@ClearButtonText</span>
+                            }
+                        </button>
+                    </td>
+                }
+            </tr>
+        </tbody>
+    </table>
+} else {
+    @switch (_dataType) {
+        case "dateonly":
+            <input id="@_id"
+                    type="date"
+                    class="@InputClass"
+                    value="@_valueDateOnly"
+                    @onchange="OnChangeDateTime"
+                    required="@(!_nullable)"
+                    step="@InputStep"
+                    min="@InputMin"
+                    max="@InputMax" />
+            break;
+
+        case "timeonly":
+            <input id="@_id"
+                    type="time"
+                    class="@InputClass"
+                    value="@_valueTimeOnly"
+                    @onchange="OnChangeTime"
+                    required="@(!_nullable)"
+                    step="@InputStep"
+                    min="@InputMin"
+                    max="@InputMax" />
+            break;
+
+        default:
+            <input id="@_id"
+                    type="datetime-local"
+                    class="@InputClass"
+                    value="@_valueDateTime"
+                    @onchange="OnChangeDateTime"
+                    required="@(!_nullable)"
+                    step="@InputStep"
+                    min="@InputMin"
+                    max="@InputMax" />
+            break;
+    }
+
+    @if (ShowNowButton) {
+        <button type="button" class="@NowButtonClass" @onclick="SetNow" title="@NowButtonTitle">
+            @if (!String.IsNullOrWhiteSpace(NowButtonIcon)) {
+                if (NowButtonIcon.Contains("<")) {
+                    @((MarkupString)NowButtonIcon)
+                } else {
+                    <i class="button-icon @NowButtonIcon"></i>
+                }
+            }
+            @if (!String.IsNullOrWhiteSpace(NowButtonText)) {
+                <span class="button-text">@NowButtonText</span>
+            }
+        </button>
+    }
+
+    @if (ShowClearButton && _nullable) {
+        <button type="button" class="@ClearButtonClass" @onclick="Clear" title="@ClearButtonTitle">
+            @if (!String.IsNullOrWhiteSpace(ClearButtonIcon)) {
+                if (ClearButtonIcon.Contains("<")) {
+                    @((MarkupString)ClearButtonIcon)
+                } else {
+                    <i class="button-icon @ClearButtonIcon"></i>
+                }
+            }
+            @if (!String.IsNullOrWhiteSpace(ClearButtonText)) {
+                <span class="button-text">@ClearButtonText</span>
+            }
+        </button>
+    }
+}
+

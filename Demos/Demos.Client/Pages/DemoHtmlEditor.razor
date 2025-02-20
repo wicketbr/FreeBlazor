@@ -1,0 +1,67 @@
+﻿@page "/HTMLEditor"
+
+<h1>HTML Editor</h1>
+
+<div class="mb-2">
+    Editor Mode: <span>@_mode</span>
+</div>
+
+<div class="mb-2">
+    <button type="button" class="btn btn-primary" @onclick="SetEditorFocus">
+        Set HTML Editor Focus
+    </button>
+
+    <button type="button" class="btn btn-primary" @onclick="SetHtmlValue">
+        Set HTML Editor Content Value
+    </button>
+
+</div>
+
+<label @onclick="@(() => _htmlEditor.SetFocus())">HTML Editor</label>
+
+<HtmlEditor 
+    @ref="_htmlEditor"
+    Config="_config"
+    OnModeChanged="OnModeChanged"
+    OnUpdate="OnHtmlUpdated"
+    OnValueChanged="StateHasChanged"
+/>
+
+<div class="mt-2">@((MarkupString)_results)</div>
+
+@code {
+    HtmlEditor _htmlEditor = null!;
+
+    protected HtmlEditor.HtmlEditorConfiguration _config = new HtmlEditor.HtmlEditorConfiguration {
+        PlaceholderText = "Enter Your HTML Here",
+        SimpleView = false,
+    };
+
+    protected string _mode = "";
+    protected string _results = "No HTML Value Set";
+
+    protected void OnHtmlUpdated(string html)
+    {
+        if (String.IsNullOrWhiteSpace(html)) {
+            _results = "No HTML Value Set";
+        } else {
+            _results = "<div class='mb-2'>HTML:</div>" + html;
+        }
+    }
+
+    protected async Task SetEditorFocus()
+    {
+        await _htmlEditor.SetFocus();
+    }
+
+    protected async Task SetHtmlValue()
+    {
+        await _htmlEditor.SetHTML("<p>An example of setting the <strong>HTML</strong> value.</p>");
+    }
+
+    protected void OnModeChanged(string mode)
+    {
+        _mode = mode;
+        StateHasChanged();
+    }
+}

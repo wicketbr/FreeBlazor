@@ -1,0 +1,17 @@
+﻿@page "/DeleteConfirmation"
+
+<h3>Delete Confirmation</h3>
+
+<DeleteConfirmation OnConfirmed="OnConfirmDelete" />
+
+<div class="mt-2">@_results</div>
+
+@code {
+    protected string _results = "";
+
+    protected void OnConfirmDelete()
+    {
+        _results = "Confirmed Delete at " + DateTime.Now.ToString();
+        StateHasChanged();
+    }
+}

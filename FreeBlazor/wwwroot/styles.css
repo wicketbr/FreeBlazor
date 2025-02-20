@@ -1,0 +1,289 @@
+﻿/*
+    Styles for the AutoComplete component
+*/
+.autocomplete-search-results {
+    position:absolute;
+    border:solid 1px #555;
+    opacity:0.9;
+}
+
+.autocomplete-search-results .result-item {
+    background-color:#ccc;
+    color:#000;
+    padding:.2em;
+    cursor:pointer;
+}
+
+.autocomplete-search-results .result-item:hover {
+    background-color:palegoldenrod;
+    color:#000;
+}
+
+.autocomplete-search-results .result-item.selected {
+    background-color:#000;
+    color:#fff;
+}
+
+.autocomplete-search-results .disabled {
+    background-color:#555;
+    color:#fff;
+    cursor:not-allowed;
+}
+
+
+
+
+/*
+    Styles for the Paged Recordset component
+*/
+select.form-select.records-per-page {
+    width:75px;
+    display:inline-block;
+    margin-left:.5em;
+}
+
+table.paged-recordset-navigation {
+    width:100%;
+}
+
+.paged-recordset-left,
+.paged-recordset-center,
+.paged-recordset-right {
+    font-size:0.8em;
+}
+
+.paged-recordset-left {
+    text-align:left;
+    width:33%;
+}
+
+.paged-recordset-center {
+    text-align: center;
+    width: 33%;
+}
+
+.paged-recordset-right {
+    text-align: right;
+    width: 33%;
+}
+
+.paged-recordset-left .records-per-page {
+    font-size:0.8em;
+}
+
+.paged-recordset-right nav {
+    float: right;
+}
+
+.paged-recordset-right nav ul.pagination {
+    font-size:0.8em;
+    margin:0;
+}
+
+.paged-recordset-right nav ul.pagination .page-link {
+    padding: .2rem .4rem;
+}
+
+.paged-recordset-right nav ul.pagination li.page-item:not(.disabled) {
+    cursor:pointer;
+}
+
+.paged-recordset-right nav ul.pagination li.page-item:not(.disabled):not(.active) div.page-link {
+    background-color:#000;
+    color:#fff;
+}
+
+.paged-recordset-margin-bottom {
+    margin-bottom:.5em;
+}
+
+.paged-recordset-margin-top {
+    margin-top: .5em;
+}
+
+ul.paged-recordset-pagination {
+    list-style: none;
+    display: flex;
+    padding-left: 0;
+}
+
+.page-link,
+ul.paged-recordset-pagination li.page-item .page-link {
+    min-width: 28px;
+    text-align:center;
+    padding:.2em .1em;
+    background-color:#000;
+    color:#fff;
+    cursor:pointer;
+}
+
+ul.paged-recordset-pagination li.page-item.disabled div.page-link {
+    background-color:#333;
+    color:#888;
+    cursor:default;
+}
+
+ul.paged-recordset-pagination li.page-item.active div.page-link {
+    background-color:#0d6efd;
+    color:#fff;
+    cursor:default;
+}
+
+ul.paged-recordset-pagination li div.page-link {
+    border-top:solid 1px #444;
+    border-left:solid 1px #444;
+    border-bottom:solid 1px #444;
+}
+
+ul.paged-recordset-pagination li:first-child div.page-link {
+    border-top-left-radius:.5em;
+    border-bottom-left-radius:.5em;
+    border-top:solid 1px #444;
+    border-bottom:solid 1px #444;
+}
+
+ul.paged-recordset-pagination li:last-child div.page-link {
+    border-top-right-radius:.5em;
+    border-bottom-right-radius:.5em;
+    border-right:solid 1px #444;
+    border-top:solid 1px #444;
+    border-bottom:solid 1px #444;
+}
+
+table.paged-recordset-table {
+    width: 100%;
+    margin-bottom: 1rem;
+    vertical-align: top;
+    border-color:#000;
+}
+
+table.paged-recordset-table > :not(caption) > * > * {
+    padding: 0.2rem 0.2rem;
+    border-bottom-width: 1px;
+}
+
+table.paged-recordset-table > tbody {
+    vertical-align: middle;
+}
+
+table.paged-recordset-table > thead {
+    vertical-align: middle;
+}
+
+table.paged-recordset-table tr.table-dark {
+    background-color:#000;
+    color:#fff;
+}
+
+table.table.paged-recordset-table {
+    font-size:0.85em;
+}
+
+table.table.paged-recordset-table tbody tr td {
+    vertical-align:top;
+}
+
+table.table.paged-recordset-table thead tr th,
+table.table.paged-recordset-table tbody tr td {
+    border-style: none;
+    padding:.3rem .2rem .15rem .2rem;
+}
+
+table.table.paged-recordset-table thead tr th button,
+table.table.paged-recordset-table tbody tr td button {
+    font-size:0.9em;
+    padding:.1rem .25rem;
+}
+
+table.table.paged-recordset-table tr.even-row td {
+    background-color: #eee;
+    color:#000;
+}
+
+table.table.paged-recordset-table tr.odd-row td{
+    background-color: #ddd;
+    color:#000;
+}
+
+table.table.paged-recordset-table tr.sep-row td {
+    border-style: solid;
+    border-color: #dee2e6;
+}
+
+
+
+
+
+/*
+    Styles for the GeneratePassword control
+*/
+table.password-generator {
+    width:100%;
+}
+
+table.password-generator tbody tr td {
+    padding:0 0 .3em 0;
+    vertical-align:top;
+}
+
+table.password-generator tbody tr td:last-child {
+    padding-left:.3em;
+}
+
+table.password-generator tbody tr td:first-child {
+    width:99%;
+}
+
+table.password-generator tbody tr td:last-child {
+    width:1%;
+    white-space:nowrap;
+}
+
+.password-generator-password {
+    width: 100%;
+}
+
+.password-generator-length-input {
+    width: 50px;
+    display: inline-block;
+}
+
+.password-generator-refresh-button {
+    min-width:40px;
+    min-height:40px;
+    border-radius:.2em;
+    border:solid 1px #000;
+    background-color:#444;
+    color:#fff;
+}
+
+.password-generator-default-refresh-icon {
+    font-size:1.5em;
+}
+
+table.password-generator .form-range {
+    width: 100%;
+}
+
+table.password-generator input[type="text"],
+table.password-generator input[type="number"] {
+    padding: .4em;
+    min-height:26px;
+}
+
+
+
+
+
+
+
+
+
+
+/*
+    Styles for the HtmlEditor control
+*/
+.html-editor:has(textarea.missing-required) iframe {
+    background: palevioletred !important;
+    background-color: palevioletred !important;
+}

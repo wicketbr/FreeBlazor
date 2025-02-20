@@ -1,0 +1,123 @@
+﻿@page "/Dialogs"
+@inject Radzen.DialogService DialogService
+<h1>Dialog Examples</h1>
+
+<div class="mb-4">
+    This page shows how various components could be used in a dialog instead of in-page.
+    These demos are using the Radzen Blazor library for the dialog.
+</div>
+
+<div class="mb-2">
+    <button type="button" class="btn btn-primary" @onclick="GeneratePassword">
+        <i class="fa-solid fa-key" aria-hidden="true"></i> Generate Password
+    </button>
+
+    @if (!String.IsNullOrWhiteSpace(_password)) {
+        <span class="ms-2">Password: @_password</span>
+    }
+</div>
+
+<div class="mb-2" @onclick="HtmlEditor">
+    <button type="button" class="btn btn-primary">
+        <i class="fa-solid fa-code" aria-hidden="true"></i> HTML Editor
+    </button>
+</div>
+
+<div>@((MarkupString)_html)</div>
+
+<div class="mb-2">
+    <button type="button" class="btn btn-primary" @onclick="GetInput">
+        <i class="fa-solid fa-font"></i> Get Input
+    </button>
+</div>
+@if (_inputValue != null) {
+    if(_inputValue.GetType() == typeof(System.String)) {
+        var value = (String)_inputValue;
+        <div>@value</div>
+    } else if (_inputValue.GetType() == typeof(List<string>)) {
+        var values = (List<string>)_inputValue;
+        <ul>
+            @foreach(var item in values) {
+                <li>@item</li>
+            }
+        </ul>
+    }
+}
+
+<div class="mb-2">
+    <button type="button" class="btn btn-primary" @onclick="Confirmation">
+        <i class="fa-solid fa-check"></i> Confirmation
+    </button>
+</div>
+@if (!String.IsNullOrWhiteSpace(_confirmationMessage)) {
+    <div class="mb-2">
+        @((MarkupString)_confirmationMessage)
+    </div>
+}
+
+@code {
+    protected string _confirmationMessage = "";
+    protected string _html = "";
+    protected object? _inputValue;
+    protected string _password = "";
+
+    protected async Task Confirmation()
+    {
+        Delegate onButtonClicked = (bool result) => {
+            DialogService.Close();
+            if (result) {
+                _confirmationMessage = "You clicked the button to confirm.";
+            } else {
+                _confirmationMessage = "You clicked the cancel button.";
+            }
+        };
+
+        _confirmationMessage = "";
+
+        await Helpers.Confirmation(onButtonClicked, "Confirmation Test", "Please click Ok to confirm...");
+    }
+
+    protected async Task GeneratePassword()
+    {
+        Delegate onPasswordAccepted = (string password) => {
+            _password = password;
+        };
+
+        await Helpers.GetNewPassword(onPasswordAccepted);
+    }
+
+    protected async Task GetInput()
+    {
+        var options = new Dictionary<string, string> {
+            { "Item1", "Item 1" },
+            { "Item2", "Item 2" },
+            { "Item3", "Item 3" },
+            { "Item4", "Item 4" },
+            { "Item5", "Item 5" },
+        };
+
+        _inputValue = null;
+
+        await Helpers.GetInput(GotInput, FreeBlazor.GetInput.InputType.Text, "Enter Some Text", "",
+            "", "Enter some text below", "form-control", 0, "Text Goes Here", true);
+    }
+
+    protected void GotInput(object value)
+    {
+        _inputValue = value;
+        StateHasChanged();
+    }
+
+    protected async Task HtmlEditor()
+    {
+        Delegate onEditCompleted = (string html) => {
+            if (String.IsNullOrWhiteSpace(html)) {
+                _html = "Empty HTML Received";
+            } else {
+                _html = html;
+            }
+        };
+
+        await Helpers.HtmlEditor(onEditCompleted, _html, "", null, "auto", "auto");
+    }
+}

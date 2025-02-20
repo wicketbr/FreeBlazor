@@ -1,0 +1,146 @@
+﻿@((MarkupString)RenderCss())
+
+<div class="@_uniqueId @WrapperClass">
+    <input type="text"
+           id="@Id"
+           class="@InputClass"
+           maxlength="@Length"
+           @bind="_value"
+           @bind:after="ValueHasChanged"
+           @bind:event="oninput" />
+</div>
+
+@code {
+    /// <summary>
+    /// The color of the background (defaults to transparent.)
+    /// </summary>
+    [Parameter] public string BackgroundColor { get; set; } = "transparent";
+
+    /// <summary>
+    /// The color of the border (defaults to #888.)
+    /// </summary>
+    [Parameter] public string BorderColor { get; set; } = "#888";
+
+    /// <summary>
+    /// The optional Id for the element.
+    /// </summary>
+    [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString().Replace("-", "").ToLower();
+
+    /// <summary>
+    /// An optional class to add to the input element.
+    /// </summary>
+    [Parameter] public string InputClass { get; set; } = "";
+
+    /// <summary>
+    /// The length of the code (defaults to 6.)
+    /// </summary>
+    [Parameter] public int Length { get; set; } = 6;
+
+    /// <summary>
+    /// An optional delegate that will be called when the value is updated.
+    /// This delegate will receive no parameter.
+    /// </summary>
+    [Parameter] public Delegate? OnValueChanged { get; set; }
+
+    /// <summary>
+    /// The pixel size of the text (defaults to 80.)
+    /// </summary>
+    [Parameter] public int TextSize { get; set;} = 80;
+
+    /// <summary>
+    /// The optional initial value for the textarea element.
+    /// </summary>
+    [Parameter] public string Value { get; set; } = "";
+
+    /// <summary>
+    /// By convention, this allows the @bind-Value option for two-way binding.
+    /// </summary>
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    /// <summary>
+    /// An optional class to add to the outer div.
+    /// </summary>
+    [Parameter] public string WrapperClass { get; set; } = "";
+
+    protected string _uniqueId = "element" + Guid.NewGuid().ToString().Replace("-", "").ToLower();
+    protected string _value = "";
+    protected List<string> _values = new List<string>();
+
+    protected override void OnInitialized()
+    {
+        _value = !String.IsNullOrWhiteSpace(Value) ? Value : "";
+
+        // Pad the values with the number of the length;
+        for (var i = 0; i < Length; i++) {
+            if (!String.IsNullOrWhiteSpace(Value) && Value.Length >= i) {
+                _values.Add(Value[i].ToString());
+            } else {
+                _values.Add("");
+            }
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Value != _value) {
+            _value = Value;
+        }
+    }
+
+    protected string RenderCss()
+    {
+        System.Text.StringBuilder output = new System.Text.StringBuilder();
+
+        var varCount = "--var-" + _uniqueId + "-count";
+        var varBorder = "--var-" + _uniqueId + "-border";
+        var varBackground = "--var-" + _uniqueId + "-background";
+        var varFontSize = "--var-" + _uniqueId + "-font-size";
+
+        output.AppendLine("<style>");
+        output.AppendLine(":root {");
+        output.AppendLine(varCount + ": " + Length + ";");
+        output.AppendLine(varBorder + ": " + BorderColor + ";");
+        output.AppendLine(varBackground + ": " + BackgroundColor + ";");
+        output.AppendLine(varFontSize + ": " + TextSize.ToString() + ";");
+        output.AppendLine("}");
+
+        output.AppendLine("." + _uniqueId + " {");
+        output.AppendLine("  border-top: solid 4px var(" + varBorder + ");");
+        output.AppendLine("  border-top-left-radius: 4px;");
+        output.AppendLine("  border-top-right-radius: 4px;");
+        output.AppendLine("  border-bottom: solid 4px var(" + varBorder + ");");
+        output.AppendLine("  border-bottom-left-radius: 4px;");
+        output.AppendLine("  border-bottom-right-radius: 4px;");
+        output.AppendLine("  border-left: none;");
+        output.AppendLine("  border-right: none;");
+        output.AppendLine("  font-family: monospace;");
+        output.AppendLine("  font-size: calc(1px * var(" + varFontSize + "));");
+        output.AppendLine("  width: calc((var(" + varCount + ") * 1ch) + (var(" + varCount + ") * 12px) + 4px);");
+        output.AppendLine("  display: inline-block;");
+        output.AppendLine("  background: repeating-linear-gradient(90deg, var(" + varBorder + "), var(" + varBorder + ") 4px 0%, var(" + varBackground + ") 2px calc(1ch + 12px), transparent 2px 0%);");
+        output.AppendLine("}");
+        output.AppendLine("");
+        output.AppendLine("." + _uniqueId + " input[type=\"text\"] {");
+        output.AppendLine("  padding: 0 0 0 8px;");
+        output.AppendLine("  font-family: monospace;");
+        output.AppendLine("  font-size: calc(1px * var(" + varFontSize + "));");
+        output.AppendLine("  letter-spacing: 12px;");
+        output.AppendLine("  width: calc((var(" + varCount + ") * 1ch) + 85px);");
+        output.AppendLine("  outline: none !important;");
+        output.AppendLine("  border: none !important;");
+        output.AppendLine("  background-color: transparent;");
+        output.AppendLine("}");
+        output.AppendLine("");
+        output.AppendLine("." + _uniqueId + " input[type=\"text\"]::selection {");
+        output.AppendLine("  background-color: rgba(255, 255, 255, 0.2);");
+        output.AppendLine("}");
+        output.AppendLine("</style>");
+
+        return output.ToString();
+    }
+
+    protected void ValueHasChanged()
+    {
+        ValueChanged.InvokeAsync(_value);
+    }
+}

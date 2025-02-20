@@ -1,0 +1,46 @@
+﻿@page "/AutoGrowText"
+
+<h1>AutoGrowText</h1>
+
+<div class="mb-2">
+    <label for="test-textarea">Test TextAreaAutoGrow</label>
+    <div>
+        <AutoGrowText 
+            @bind-Value="_content"
+            Class="form-control"
+            Id="test-textarea"
+            MinimumHeight="@_minHeight" 
+            Placeholder="Type some text here" 
+            UpdateAfterMilliseconds="300"/>
+    </div>
+</div>
+
+<div class="mb-2">
+    <button type="button" class="btn btn-primary" @onclick="SetValue">
+        Set Value in Code
+    </button>
+</div>
+
+<div class="mb-2">
+    <label for="min-height">Min Height</label>
+    <input type="text" class="form-control" id="min-height" @bind="_minHeight" @bind:event="oninput" />
+</div>
+
+<div class="mb-2">
+    <strong>Content</strong>:
+    <div>@_content</div>
+</div>
+
+@code {
+    protected string _content = "";
+    protected string _minHeight = "";
+
+    protected void SetValue()
+    {
+        _content = "Lorem ipsum odor amet, consectetuer adipiscing elit. Ex curae ornare vivamus morbi; facilisis massa laoreet. Justo nibh egestas dis per nisl mi. Pharetra feugiat curabitur sociosqu efficitur consequat platea odio egestas vulputate. Risus a est gravida habitant tincidunt curae. Himenaeos mi magnis sociosqu suscipit habitasse efficitur. Praesent nec justo nullam natoque dolor erat. Semper viverra facilisis mollis diam, ultrices hac." +
+            Environment.NewLine + Environment.NewLine +
+            "Ultricies quam pulvinar lacinia litora nec cursus. Commodo pharetra non aliquet aliquam, placerat porttitor faucibus curabitur. Sapien netus class suscipit vestibulum aenean aliquam, nibh efficitur. Torquent curabitur id pulvinar facilisi cras dignissim parturient. Neque volutpat nullam tempor maximus maximus. Malesuada per lorem lacinia nunc blandit euismod. Primis nisl aenean magna fringilla cursus. Mattis habitant feugiat elit risus pretium dictum aliquet vitae per. Cras hac rhoncus mi aenean quisque nunc elementum urna hac." +
+            Environment.NewLine + Environment.NewLine +
+            "Nunc dapibus aptent egestas urna habitant sapien ipsum. Feugiat egestas commodo diam vehicula elit sem. Dis himenaeos nullam amet iaculis ut dis. Proin aptent suspendisse bibendum ac quis. Quis vel nisl congue donec molestie blandit auctor hendrerit. Vestibulum cubilia porttitor ad platea lobortis porta proin natoque. Sed nibh montes quisque; egestas in quisque. Primis metus purus eros; litora dapibus netus pretium.";
+    }
+}

@@ -1,0 +1,54 @@
+﻿@inject IJSRuntime jsRuntime
+@inject Radzen.DialogService DialogService
+<GetInput 
+    Class="@Class"
+    DefaultValue="@DefaultValue"
+    Id="@Id"
+    Instructions="@Instructions"
+    MultiselectRows="@MultiselectRows"
+    OnInputAccepted="TextValueChanged"
+    PlaceholderText="@PlaceholderText"
+    SetFocus="@SetFocus"
+    UserInputOptions="@UserInputOptions"
+    UserInputType="@UserInputType" />
+<div class="mt-2 mb-2">
+    <button type="button" class="btn btn-dark" @onclick="Cancel">
+        <i class="fa-solid fa-xmark"></i> Cancel
+    </button>
+    <button type="button" class="btn btn-success" @onclick="ReturnValue">
+        <i class="fa-solid fa-circle-check"></i> OK
+    </button>
+</div>
+@code {
+    protected object? _value;
+
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? DefaultValue { get; set; }
+    [Parameter] public string? Id { get; set; }
+    [Parameter] public string? Instructions { get; set; }
+    [Parameter] public int? MultiselectRows { get; set; }
+    [Parameter] public Delegate? OnInputAccepted { get; set; }
+    [Parameter] public string? PlaceholderText { get; set; }
+    [Parameter] public bool? SetFocus { get; set; }
+    [Parameter] public Dictionary<string, string>? UserInputOptions { get; set; }
+    [Parameter] public FreeBlazor.GetInput.InputType? UserInputType { get; set; }
+
+    protected void Cancel()
+    {
+        DialogService.Close();
+    }
+
+    protected void ReturnValue()
+    {
+        if (OnInputAccepted != null && _value != null) {
+            OnInputAccepted.DynamicInvoke(_value);
+        }
+
+        DialogService.Close();
+    }
+
+    protected void TextValueChanged(object value)
+    {
+        _value = value;
+    }
+}

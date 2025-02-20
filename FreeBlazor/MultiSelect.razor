@@ -1,0 +1,162 @@
+﻿<select class="@_class" multiple @onchange="ItemsChanged" id="@_id" size="@_size">
+    @foreach (var option in _internalOptions) {
+        <option value="@option.Value" selected="@option.Selected">@option.Label</option>
+    }
+</select>
+@code {
+    protected string _class = String.Empty;
+    protected string _id = Guid.NewGuid().ToString();
+    protected List<InternalOption> _internalOptions = new List<InternalOption>();
+    protected int _size = 5;
+
+    /// <summary>
+    /// An optional class to add to the select element.
+    /// </summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>
+    /// An optional id to for the select element. If left empty a random id will be generated.
+    /// </summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>
+    /// A delegate callback handler that will receive the updated values. A list of strings will be passed which are the currently-selected items.
+    /// </summary>
+    [Parameter] public Action<List<string>>? OnUpdate { get; set; }
+
+    /// <summary>
+    /// An optional delegate that will be called when the value is updated.
+    /// This delegate will receive no parameter.
+    /// </summary>
+    [Parameter] public Delegate? OnValueChanged { get; set; }
+
+    /// <summary>
+    /// The optional size for the select element.
+    /// </summary>
+    [Parameter] public int? Size { get; set; }
+
+    /// <summary>
+    /// The required collection of options for the list. This is a list of tuple values of item value, item label, and a flag indicating if the item is selected.
+    /// </summary>
+    [Parameter] public List<(string value, string label, bool selected)>? Options { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await RenderMultiselect();
+    }
+
+    protected void ItemsChanged(ChangeEventArgs e)
+    {
+        List<string> selectedItems = new List<string>();
+
+        if (e != null && e.Value != null) {
+            try {
+                var values = (string[])e.Value;
+                if (values != null && values.Any()) {
+                    selectedItems = values.ToList();
+                }
+            } catch { }
+        }
+
+        foreach(var option in _internalOptions) {
+            option.Selected = selectedItems.Contains(option.Value);
+        }
+
+        StateHasChanged();
+
+        TriggerOnUpdateCallback();
+    }
+
+    protected string OptionsToString(List<InternalOption> options)
+    {
+        var output = new System.Text.StringBuilder();
+
+        foreach (var option in options) {
+            output.AppendLine(option.Value + "|" + option.Label + "|" + (option.Selected ? "1" : "0"));
+        }
+
+        return output.ToString();
+    }
+
+    protected async Task RenderMultiselect()
+    {
+        await System.Threading.Tasks.Task.Delay(1);
+
+        string updatedId = !String.IsNullOrWhiteSpace(Id) ? Id : _id;
+        if(_id != updatedId) {
+            _id = updatedId;
+        }
+
+        string updatedClass = !String.IsNullOrWhiteSpace(Class) ? Class : "";
+        if(_class != updatedClass) {
+            _class = updatedClass;
+        }
+
+        int updatedSize = Size.HasValue ? (int)Size : 5;
+        if(_size != updatedSize) {
+            _size = updatedSize;
+        }
+
+        string current = OptionsToString(_internalOptions);
+        string updated = OptionsToString(TuplesToInternalOptions(Options));
+
+        if(current != updated) {
+            // This indicates the values were set externally. If this was done internally
+            // the ItemsChanged event would have fired instead. We only fire this code
+            // if the items don't match, that way we prevent an endless loop of firing.
+
+            // To force a redraw set the options to nothing, then to the new values.
+            // If the list isn't cleared for some reason Blazor does not redraw this component,
+            // even though looking at the DOM elements the "selected" flag for the options is
+            // being flipped. Keep looking for a better way to ensure the item redraws, as this
+            // method makes the scroll position change on the select list.
+            _internalOptions = new List<InternalOption>();
+            StateHasChanged();
+
+            _internalOptions = Options != null && Options.Any() ? TuplesToInternalOptions(Options) : new List<InternalOption>();
+            StateHasChanged();
+
+            TriggerOnUpdateCallback();
+        }
+    }
+
+    protected void TriggerOnUpdateCallback()
+    {
+        List<string> selectedItems = new List<string>();
+        foreach (var option in _internalOptions.Where(x => x.Selected == true)) {
+            selectedItems.Add(option.Value);
+        }
+
+        if (OnUpdate != null) {
+            OnUpdate.Invoke(selectedItems);
+        }
+
+        if (OnValueChanged != null) {
+            OnValueChanged.DynamicInvoke();
+        }
+    }
+
+    protected List<InternalOption> TuplesToInternalOptions(List<(string value, string label, bool selected)>? options)
+    {
+        List<InternalOption> output = new List<InternalOption>();
+
+        if(options != null && options.Any()) {
+            foreach(var option in options) {
+                output.Add(new InternalOption {
+                    Value = option.value,
+                    Label = option.label,    
+                    Selected = option.selected,
+                });
+            }
+        }
+
+        return output;
+    }
+
+    protected class InternalOption
+    {
+        public string Value { get; set; } = "";
+        public string Label { get; set; } = "";
+        public bool Selected { get; set; }
+    }
+}

@@ -1,0 +1,1454 @@
+﻿@if (_recordset != null) {
+    int pageCount = _recordset.TotalPages;
+    int currentPage = _recordset.CurrentPage;
+    int recordsPerPage = _recordset.RecordsPerPage;
+    int recordCount = _recordset.Records != null ? _recordset.Records.Count() : 0;
+    int totalRecords = _recordset.TotalRecords;
+
+    int startCount = 1;
+    if (currentPage > 1) {
+        startCount += (currentPage - 1) * recordsPerPage;
+    }
+
+    int endCount = (startCount + recordCount - 1);
+
+    string showingLabel = _config.TextShowing + " " + startCount.ToString() + " - " + endCount.ToString();
+    if (totalRecords > endCount) {
+        showingLabel += " " + _config.TextOf + " " + totalRecords.ToString();
+    }
+    showingLabel += " " + (totalRecords == 1 ? _config.TextRecord : _config.TextRecords);
+    if (totalRecords == recordCount) {
+        showingLabel = StringValue(_config.TextShowingAllRecords);
+        if (showingLabel.Contains("{0}")) {
+            showingLabel = showingLabel.Replace("{0}", totalRecords.ToString());
+        } else {
+            showingLabel += " [" + totalRecords.ToString() + "]";
+        }
+    }
+
+    int startPage = 1;
+    int endPage = 1;
+    if (pageCount < 6) {
+        endPage = pageCount;
+    } else {
+        if (currentPage > 2) {
+            startPage = currentPage - 2;
+            endPage = currentPage + 2;
+        } else {
+            endPage = 5;
+        }
+
+        if (startPage < 1) {
+            startPage = 1;
+        }
+
+        if (endPage > pageCount) {
+            int howManyMore = endPage - pageCount;
+            endPage = endPage - howManyMore;
+            startPage = startPage - howManyMore;
+            if (startPage < 1) {
+                startPage = 1;
+            }
+        }
+    }
+
+    string recordsPerPageClass = "records-per-page";
+    string paginationClass = "";
+
+    if (_useBootstrap) {
+        recordsPerPageClass += " form-select";
+        paginationClass = "pagination";
+    } else {
+        paginationClass = "paged-recordset-pagination";
+    }
+
+    bool centerItemsShown = false;
+
+    if (_navLocation == NavLocation.Top || _navLocation == NavLocation.Both) {
+        <table class="paged-recordset-navigation paged-recordset-margin-bottom">
+            <tbody>
+                <tr>
+                    <td class="paged-recordset-left">
+                        <span>@showingLabel</span>
+                        <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected">
+                            @foreach (var rpp in _recordsPerPageOptions) {
+                                if (rpp == recordsPerPage) {
+                                    <option value="@rpp" SELECTED>@rpp</option>
+                                } else {
+                                    <option value="@rpp">@rpp</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                    <td class="paged-recordset-center">
+                        @if (_centerItems != null && _centerItems.Any()) {
+                            centerItemsShown = true;
+                            foreach (var centerItem in _centerItems) {
+                                if (centerItem.Value != null) {
+                                    <span class="paged-recordset-center-item" @onclick="@(() => CenterItemClicked(centerItem.Value))">@((MarkupString)centerItem.Key)</span>
+                                } else {
+                                    <span class="paged-recordset-center-item">@((MarkupString)centerItem.Key)</span>
+                                }
+                            }
+                        }
+                    </td>
+                    <td class="paged-recordset-right">
+                        <nav>
+                            <ul class="@paginationClass">
+                                @if (currentPage == 1) {
+                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                                } else {
+                                    <li class="page-item" @onclick="(() => PageNavigationClicked(1))"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                    <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage - 1))"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                                }
+
+                                @for (int x = startPage; x <= endPage; x++) {
+                                    int pageId = x;
+                                    if (currentPage == pageId) {
+                                        <li class="page-item active"><div class="page-link">@pageId</div></li>
+                                    } else {
+                                        <li class="page-item" @onclick="(() => PageNavigationClicked(pageId))"><div class="page-link">@pageId</div></li>
+                                    }
+                                }
+
+                                @if (currentPage == endPage) {
+                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                                } else {
+                                    <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage + 1))"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                    <li class="page-item" @onclick="(() => PageNavigationClicked(pageCount))"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                                }
+                            </ul>
+                        </nav>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+
+    <table class="@_tableClass">
+        <thead>
+            <tr class="@_tableHeaderRowClass">
+                @if (_showActionButtons > 0) {
+                    foreach (var a in _actionHandlers.Where(x => !String.IsNullOrWhiteSpace(x.ActionElement))) {
+                        <th class="@a.ColumnClass" style="width:1%;">@a.ColumnTitle</th>
+                    }
+                }
+
+                @if (_includeCheckboxes) {
+                    <th class="action-item" style="width:1%;">
+                        <input type="checkbox" class="form-check-input" @onchange="ToggleAllCheckboxes" />
+                    </th>
+                }
+
+                @if (_recordset.Columns != null && _recordset.Columns.Any()) {
+                    foreach (var c in _recordset.Columns) {
+                        string elementName = StringValue(c.DataElementName);
+                        string buttonClass = "btn btn-xs nowrap";
+                        bool isDisabled = !c.Sortable;
+
+                        string thClass = "data-element-" + StringValue(c.DataElementName).ToLower() + " " + StringValue(c.Class) + " " + StringValue(c.Align);
+
+                        <th title="@c.TipText" class="@thClass.Trim()">
+                            @if (c.Sortable || !String.IsNullOrWhiteSpace(c.Label)) {
+                                if (c.Sortable) {
+                                    if (elementName.ToLower() == _sort.ToLower()) {
+                                        buttonClass += " btn-primary";
+                                    } else {
+                                        buttonClass += " btn-dark";
+                                    }
+                                } else {
+                                    buttonClass += " disabled";
+                                }
+                                <button type="button" class="@buttonClass" @onclick="@(() => ColumnClicked(c))" disabled="@isDisabled">
+                                    @if (StringValue(c.DataElementName).ToLower() == _sort.ToLower()) {
+                                        if (_sortOrder == "ASC") {
+                                            <i class="fas fa-caret-up sort-arrow"></i>
+                                        } else {
+                                            <i class="fas fa-caret-down sort-arrow"></i>
+                                        }
+                                    }
+                                    @if (!String.IsNullOrWhiteSpace(c.Label)) {
+                                        <i>@((MarkupString)c.Label)</i>
+                                    }
+                                </button>
+                            }
+                        </th>
+                    }
+                }
+            </tr>
+        </thead>
+        @if (_recordset.Records != null && _recordset.Records.Any()) {
+            int index = -1;
+            <tbody>
+                @foreach (var r in _recordset.Records) {
+                    // Get the record back into an object we can use.
+                    //var json = (System.Text.Json.JsonElement)r;
+
+                    index++;
+                    var thisIndex = index;
+                    List<ExtraRowDataValues> extraData = new List<ExtraRowDataValues>();
+                    if (_hasExtraData) {
+                        try {
+                            //extraData = _extraRowData[index].Data;
+                            var extraRow = _extraRowData.FirstOrDefault(x => x.Row == thisIndex);
+                            if (extraRow != null){
+                                extraData = extraRow.Data;
+                            }
+                        } catch { }
+                    }
+                    bool rowHasExtraData = extraData.Any();
+
+                    string extraRowClass = "";
+                    if (_rowClasses.Any() && _rowClasses.Count() > thisIndex) {
+                        var rClass = _rowClasses[thisIndex];
+                        if (!String.IsNullOrWhiteSpace(rClass)) {
+                            extraRowClass = rClass;
+                        }
+                    }
+
+                    string rowClass = rowHasExtraData ? "" : "sep-row";
+
+                    if (_useActionHandler && _showActionButtons == 0) {
+                        rowClass += " action-row";
+                    }
+
+                    if (extraRowClass != "") {
+                        if (rowClass != "") { rowClass += " "; }
+                        rowClass += extraRowClass;
+                    }
+
+                    <tr class="@rowClass" @onclick="(() => RowClicked(r))">
+                        @foreach (var a in _actionHandlers.Where(x => !String.IsNullOrWhiteSpace(x.ActionElement))) {
+                            bool show = true;
+
+                            if (!String.IsNullOrWhiteSpace(a.ShowIfElementHasValue)) {
+                                var itemValue = GetObjectPropertyValue(r, a.ShowIfElementHasValue);
+
+                                if (!String.IsNullOrWhiteSpace(itemValue)) {
+                                    if (itemValue == "{{boolean:false}}") {
+                                        show = false;
+                                    } else if (itemValue == "{{boolean:true}}") {
+                                        show = true;
+                                    } else {
+                                        var type = GetObjectPropertyType(r, a.ShowIfElementHasValue);
+
+                                        if (type == typeof(Boolean)) {
+                                            show = itemValue.ToLower() == "true";
+                                        } else {
+                                            show = true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (show) {
+                                string actionElement = StringValue(a.ActionElement);
+                                int iStart = actionElement.IndexOf("{{");
+                                int iEnd = actionElement.IndexOf("}}");
+                                if (iStart > -1 && iEnd > iStart) {
+                                    string itemName = actionElement.Substring(iStart + 2, iEnd - iStart - 2);
+
+                                    var recordValue = GetObjectPropertyValue(r, itemName);
+                                    if (!String.IsNullOrWhiteSpace(recordValue)) {
+                                        actionElement = actionElement.Replace("{{" + itemName + "}}", recordValue);
+                                    } else {
+                                        actionElement = actionElement.Replace("{{" + itemName + "}}", "view");
+                                    }
+                                }
+                                <td class="no-pad-right action-item">
+                                    <div @onclick="@(() => ActionClicked(a, r))">
+                                        @((MarkupString)actionElement)
+                                    </div>
+                                </td>
+                            } else {
+                                <td></td>
+                            }
+                        }
+
+                        @if (_includeCheckboxes) {
+
+                            <td>
+                                @if (_checkedItems[thisIndex]) {
+                                    <input type="checkbox" class="form-check-input" @onchange="@((ChangeEventArgs e) => ToggleCheckbox(e, thisIndex))" checked />
+                                } else {
+                                    <input type="checkbox" class="form-check-input" @onchange="@((ChangeEventArgs e) => ToggleCheckbox(e, thisIndex))" />
+                                }
+                            </td>
+                        }
+
+                        @if (_recordset.Columns != null && _recordset.Columns.Any()) {
+                            foreach (var c in _recordset.Columns) {
+                                string tdClass = "data-item-" + StringValue(c.DataElementName).ToLower() + " " + StringValue(c.Class) + " " + StringValue(c.Align);
+
+                                var value = GetObjectPropertyValue(r, c.DataElementName);
+                                <td class="@tdClass">@((MarkupString)FormatData(value, c, index, r))</td>
+                            }
+                        }
+                    </tr>
+                    if (rowHasExtraData && extraData.Any()) {
+                        int counter = 0;
+                        int colSpan = _recordset.Columns != null ? _recordset.Columns.Count() : 0;
+
+                        foreach(var extraRowItem in extraData) {
+                            counter++;
+
+                            rowClass = counter == extraData.Count() ? "sep-row" : "";
+                            string rowDataValue = String.Empty;
+
+                            if (!String.IsNullOrWhiteSpace(extraRowItem.Label)) {
+                                rowDataValue += extraRowItem.Label + ": ";
+                            }
+                            rowDataValue += extraRowItem.Value;
+
+                            if (!String.IsNullOrWhiteSpace(extraRowClass)) {
+                                if(!String.IsNullOrWhiteSpace(rowClass)) {
+                                    rowClass += " ";
+                                }
+                                rowClass += extraRowClass;
+                            }
+
+                            <tr class="@rowClass">
+                                @foreach (var a in _actionHandlers.Where(x => !String.IsNullOrWhiteSpace(x.ActionElement))) {
+                                    <td></td>
+                                }
+
+                                @if (_includeCheckboxes) {
+                                    <td></td>
+                                }
+
+                                <td colspan="@colSpan">
+                                    @((MarkupString)rowDataValue)
+                                </td>
+                            </tr>
+                        }
+                    }
+                }
+            </tbody>
+        }
+    </table>
+
+    @if (_navLocation == NavLocation.Bottom || _navLocation == NavLocation.Both) {
+        <table class="paged-recordset-navigation paged-recordset-margin-top">
+            <tbody>
+                <tr>
+                    <td class="paged-recordset-left">
+                        <span>@showingLabel</span>
+                        <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected">
+                            @foreach (var rpp in _recordsPerPageOptions) {
+                                if (rpp == recordsPerPage) {
+                                    <option value="@rpp" SELECTED>@rpp</option>
+                                } else {
+                                    <option value="@rpp">@rpp</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                    <td class="paged-recordset-center">
+                        @if (!centerItemsShown && _centerItems != null && _centerItems.Any()) {
+                            foreach (var centerItem in _centerItems) {
+                                if (centerItem.Value != null) {
+                                    <span class="paged-recordset-center-item" @onclick="@(() => CenterItemClicked(centerItem.Value))">@((MarkupString)centerItem.Key)</span>
+                                } else {
+                                    <span class="paged-recordset-center-item">@((MarkupString)centerItem.Key)</span>
+                                }
+                            }
+                        }
+                    </td>
+                    <td class="paged-recordset-right">
+                        <nav>
+                            <ul class="@paginationClass">
+                                @if (currentPage == 1) {
+                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                                } else {
+                                    <li class="page-item" @onclick="(() => PageNavigationClicked(1))"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                    <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage - 1))"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                                }
+
+                                @for (int x = startPage; x <= endPage; x++) {
+                                    int pageId = x;
+                                    if (currentPage == pageId) {
+                                        <li class="page-item active"><div class="page-link">@pageId</div></li>
+                                    } else {
+                                        <li class="page-item" @onclick="(() => PageNavigationClicked(pageId))"><div class="page-link">@pageId</div></li>
+                                    }
+                                }
+
+                                @if (currentPage == endPage) {
+                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                                } else {
+                                    <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage + 1))"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                    <li class="page-item" @onclick="(() => PageNavigationClicked(pageCount))"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                                }
+                            </ul>
+                        </nav>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    protected List<ActionHandler> _actionHandlers = new List<ActionHandler>();
+    protected string _booleanIcon = "";
+    protected Dictionary<string, Action?> _centerItems = new Dictionary<string, Action?>();
+    protected bool[] _checkedItems = [];
+    protected Config _config = new Config();
+    protected bool _hasExtraData = false;
+    protected List<ExtraRowData> _extraRowData = new List<ExtraRowData>();
+    protected List<Formatter> _formatters = new List<Formatter>();
+    protected bool _includeCheckboxes = false;
+    protected NavLocation _navLocation = NavLocation.Both;
+    protected Recordset _recordset = new Recordset();
+    protected List<int> _recordsPerPageOptions = new List<int> { 1, 5, 10, 15, 20, 25, 50, 100 };
+    protected bool _reloadingCheckboxes = false;
+    protected List<string> _rowClasses = new List<string>();
+    protected int _showActionButtons = 0;
+    protected string _sort = "";
+    protected string _sortOrder = "";
+    protected string _tableActionRowHeader = "";
+    protected string _tableClass = "";
+    protected string _tableHeaderRowClass = "";
+    protected bool _useActionHandler = false;
+    protected bool _useBootstrap = false;
+
+    /// <summary>
+    /// OPTIONAL: One or more action handlers (eg: edit, view, etc.). If only one actionHandler is specified
+    /// and no actionElement is specified then the entire table row will be used to invoke the action.
+    /// Otherwise, these items will be rendered in the first columns of the data table.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<ActionHandler>? ActionHandlers { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: An optional icon to use for boolean items. If not specified then "true" will be shown for true boolean items.
+    /// </summary>
+    [Parameter]
+    public string? BooleanIcon { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: A collection of items to show in the center of the navigation area. The first item in each dictionary pair is the HTML
+    /// that will be rendered for the iten. The second is an optional callback handler to be invoked when that item is clicked.
+    /// </summary>
+    [Parameter]
+    public Dictionary<string, Action?>? CenterItems { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: A configuration object that can be used to override one or more of the built-in options.
+    /// </summary>
+    [Parameter]
+    public Config? Configuration { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: A callback handler that will receive an array of numbers representing the indexes of the record rows that are checked.
+    /// This will be called every time the state of one or more checkboxes changes.
+    /// </summary>
+    [Parameter]
+    public Action<int[]>? CheckboxCallbackHandler { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: A collection of extra data items that will be rendered below the row that contains the data.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<ExtraRowData>? ExtraRowDataItems { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: Formatting callback handlers.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<Formatter>? Formatters { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: If true a column of checkboxes will be added to allow for record selection with a checkbox
+    /// in the header row to toggle the state of all the checkboxes.
+    /// </summary>
+    [Parameter]
+    public bool? IncludeCheckboxes { get; set; }
+
+    /// <summary>
+    /// REQUIRED: The function that will be invoked when the items per page, current page, or sort is changed.
+    /// The first parameter is the type of change (page, count, sort) and the second is the value of that change.
+    /// </summary>
+    [Parameter]
+    public Action<string, object>? NavigationCallbackHander { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: An optional value (Top, Bottom, Both) to indicate where the record navigation should be displayed. Defaults to Top.
+    /// </summary>
+    [Parameter]
+    public NavLocation? NavigationLocation { get; set; }
+
+    /// <summary>
+    /// REQUIRED: The object that holds the recordset data.
+    /// </summary>
+    [Parameter]
+    public Recordset? RecordData { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: Override the options for the number of records per page by passing a collection of int values.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<int>? RecordsPerPageOptions { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: Any CSS class that should be added to the row using the same index as the row.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<string>? RowClasses { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: Override the default class that gets added to the table ("table table-sm")
+    /// </summary>
+    [Parameter]
+    public string? TableClass { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: Override the default class that gets added to the THEAD TR element ("table-dark")
+    /// </summary>
+    [Parameter]
+    public string? TableHeaderRowClass { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: Flag to indicate you are using Bootstrap for styling the layout.
+    /// </summary>
+    [Parameter]
+    public bool? UseBootstrap { get; set; }
+
+    protected void ActionClicked(ActionHandler handler, object record)
+    {
+        if (handler.CallbackHandler != null) {
+            handler.CallbackHandler.Invoke(record);
+        }
+    }
+
+    protected void CallCheckboxCallbackHandler()
+    {
+        if(CheckboxCallbackHandler != null) {
+            List<int> checkedItems = new List<int>();
+            for (int i = 0; i < _checkedItems.Length; i++) {
+                if (_checkedItems[i]) {
+                    checkedItems.Add(i);
+                }
+            }
+
+            CheckboxCallbackHandler.Invoke(checkedItems.ToArray());
+        }
+    }
+
+    protected void CenterItemClicked(Action? action)
+    {
+        if (action != null) {
+            action.Invoke();
+        }
+    }
+
+    /// <summary>
+    /// Sets the checked items for the recordset. This is a zero-based array of indexes that should be checked.
+    /// </summary>
+    /// <param name="indexes">An int array of the items in the recordset that should be checked.</param>
+    public void CheckItems(int[] indexes)
+    {
+        if(_recordset.Records != null && _recordset.Records.Any()) {
+            _reloadingCheckboxes = true;
+
+            _checkedItems = new bool[_recordset.Records.Count()];
+            foreach (var i in indexes) {
+                if (i < _checkedItems.Length) {
+                    _checkedItems[i] = true;
+                }
+            }
+
+            _reloadingCheckboxes = false;
+            StateHasChanged();
+
+            CallCheckboxCallbackHandler();
+        }
+    }
+
+    protected void ColumnClicked(Column column)
+    {
+        if (NavigationCallbackHander != null) {
+            NavigationCallbackHander.Invoke("sort", StringValue(column.DataElementName));
+        }
+    }
+
+    protected string FormatData(string? value, Column column, int recordIndex, object record)
+    {
+        string output = String.Empty;
+
+        if (!String.IsNullOrWhiteSpace(value)) {
+            // See if there are any custom formatters
+            bool formatted = false;
+
+            string dataType = StringValue(column.DataType).ToLower();
+
+            if (_formatters.Any()) {
+                var formatter = _formatters.FirstOrDefault(x => x.DataType.ToLower() == dataType);
+                if (formatter != null) {
+                    if (formatter.CallbackHandler != null) {
+                        object? formattedValue = null;
+
+                        var type = formatter.CallbackHandler.GetType();
+
+                        if (type == typeof(Func<string, string>)) {
+                            formattedValue = formatter.CallbackHandler.DynamicInvoke(value);
+                        } else if (type == typeof(Func<string, int, string>)) {
+                            formattedValue = formatter.CallbackHandler.DynamicInvoke(value, recordIndex);
+                        } else if (type == typeof(Func<string, object, string>)) {
+                            formattedValue = formatter.CallbackHandler.DynamicInvoke(value, record);
+                        } else if (type == typeof(Func<object, string>)) {
+                            formattedValue = formatter.CallbackHandler.DynamicInvoke(record);
+                        }
+
+                        if (formattedValue != null && formattedValue.GetType() == typeof(String)) {
+                            output = (string)formattedValue;
+                            formatted = true;
+                        }
+                    }
+                }
+            }
+
+            if (!formatted) {
+                if (dataType.Contains("currency")) {
+                    string currencyCharacter = "";
+
+                    if (dataType.Contains("|")) {
+                        // A custom currency symbol was specified.
+                        currencyCharacter = dataType.Substring(dataType.IndexOf("|") + 1);
+                    }
+
+                    decimal n = 0;
+                    try {
+                        n = Convert.ToDecimal(value);
+
+                        if (currencyCharacter != "") {
+                            output = currencyCharacter + n.ToString("N");
+                        } else {
+                            output = n.ToString("C");
+                        }
+                        formatted = true;
+                    } catch { }
+
+                    if (!formatted) {
+                        // Unable to format as currency, so just include the value as the output
+                        output = value;
+                        formatted = true;
+                    }
+                } else {
+                    switch (dataType) {
+                        case "datetime":
+                            try {
+                                output = Convert.ToDateTime(value).ToString();
+                            } catch {
+                                output = value;
+                            }
+                            break;
+
+                        case "bool":
+                        case "boolean":
+                            if (value == "{{boolean:true}}" || value.ToLower() == "true") {
+                                if (!String.IsNullOrWhiteSpace(column.BooleanIcon)) {
+                                    output = column.BooleanIcon;
+                                } else if (!String.IsNullOrWhiteSpace(BooleanIcon)) {
+                                    output = BooleanIcon;
+                                } else {
+                                    output = "true";
+                                }
+                            } else {
+
+                            }
+                            break;
+
+                        case "guid":
+                            try {
+                                Guid g = new Guid(value);
+                                if (g != Guid.Empty) {
+                                    output = g.ToString();
+                                }
+                            } catch {
+                                output = value;
+                            }
+                            break;
+
+                        default:
+                            // string, etc.
+                            output = value;
+                            break;
+                    }
+                }
+            }
+        }
+
+
+        return output;
+    }
+
+    protected Type GetObjectPropertyType(object? obj, string? property)
+    {
+        Type output = typeof(void);
+
+        if (obj != null && !String.IsNullOrWhiteSpace(property)) {
+            Type type = obj.GetType();
+
+            if (type == typeof(System.Text.Json.JsonElement)) {
+                output = GetObjectPropertyTypeJson((System.Text.Json.JsonElement)obj, property);
+            } else {
+                output = GetObjectPropertyTypeStandard(obj, property);
+            }
+        }
+
+        return output;
+    }
+
+    protected Type GetObjectPropertyTypeJson(System.Text.Json.JsonElement element, string property)
+    {
+        Type output = typeof(void);
+
+        try {
+            // Find the case-sensitive property name
+            var document = System.Text.Json.JsonDocument.Parse(element.ToString());
+            if (document != null) {
+                foreach (var prop in document.RootElement.EnumerateObject()) {
+                    if (prop.Name.ToLower() == property.ToLower()) {
+                        property = prop.Name;
+                        break;
+                    }
+                }
+            }
+
+            var elem = element.GetProperty(property);
+            var type = elem.ValueKind;
+
+            switch (type) {
+                case System.Text.Json.JsonValueKind.Array:
+                    output = typeof(Array);
+                    break;
+
+                case System.Text.Json.JsonValueKind.False:
+                    output = typeof(Boolean);
+                    break;
+
+                case System.Text.Json.JsonValueKind.Null:
+                    output = typeof(Nullable);
+                    break;
+
+                case System.Text.Json.JsonValueKind.Number:
+                    var numberAsString = elem.GetRawText();
+                    if (!String.IsNullOrWhiteSpace(numberAsString)) {
+                        numberAsString = numberAsString.Trim();
+
+                        if (numberAsString.Contains(".") || numberAsString.Contains(",")) {
+                            // try a decimal value
+                            try {
+                                var numberDecimal = elem.GetDecimal();
+                                output = typeof(Decimal);
+                                return output;
+                            } catch { }
+                        } else {
+                            try {
+                                var numberInt32 = elem.GetInt32();
+                                output = typeof(Int32);
+                                return output;
+                            } catch { }
+                        }
+                    }
+
+                    try {
+                        var n = elem.GetDecimal();
+                        output = typeof(Decimal);
+                        return output;
+                    } catch {
+                        try {
+                            var n2 = elem.GetDouble();
+                            output = typeof(Double);
+                            return output;
+                        } catch {
+                            try {
+                                var n3 = elem.GetInt32();
+                                output = typeof(Int32);
+                                return output;
+                            } catch { }
+                        }
+                    }
+                    break;
+
+                case System.Text.Json.JsonValueKind.Object:
+                    output = typeof(Object);
+                    break;
+
+                case System.Text.Json.JsonValueKind.String:
+                    output = typeof(String);
+                    break;
+
+                case System.Text.Json.JsonValueKind.True:
+                    output = typeof(Boolean);
+                    break;
+
+                case System.Text.Json.JsonValueKind.Undefined:
+                    break;
+            }
+        } catch { }
+
+        return output;
+    }
+
+    protected Type GetObjectPropertyTypeStandard(object obj, string property)
+    {
+        Type output = typeof(void);
+
+        if (obj != null) {
+            foreach (String part in property.Split(".")) {
+                Type type = obj.GetType();
+
+                System.Reflection.BindingFlags bindingAttrs = System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.Static |
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.IgnoreCase;
+
+                var info = type.GetProperty(part, bindingAttrs);
+                if (info != null) {
+                    output = info.PropertyType;
+                }
+            }
+        }
+
+        return output;
+    }
+
+    protected string GetObjectPropertyValue(object? obj, string? property)
+    {
+        string output = String.Empty;
+
+        if (obj != null && !String.IsNullOrWhiteSpace(property)) {
+            Type type = obj.GetType();
+
+            if (type == typeof(System.Text.Json.JsonElement)) {
+                output = GetObjectPropertyValueJson((System.Text.Json.JsonElement)obj, property);
+            } else {
+                var propertyValue = GetObjectPropertyValueStandard<string>(obj, property);
+                if (!String.IsNullOrWhiteSpace(propertyValue)) {
+                    output = propertyValue;
+                }
+            }
+        }
+
+        return output;
+    }
+
+    protected T? GetObjectPropertyValueStandard<T>(object? o, string property)
+    {
+        T? output = default(T);
+
+        if (o != null) {
+            foreach (String part in property.Split(".")) {
+                Type type = o.GetType();
+
+                var tType = typeof(T);
+
+                System.Reflection.BindingFlags bindingAttrs = System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.Static |
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.IgnoreCase;
+
+                var info = type.GetProperty(part, bindingAttrs);
+                if (info != null) {
+                    var obj = info.GetValue(o, null);
+                    if (obj != null) {
+                        try {
+                            if (tType == typeof(System.String) && typeof(object) != typeof(System.String)) {
+                                // This is not a string type, but is being requested as a string.
+                                var castObject = (object)obj;
+
+                                if (castObject != null) {
+                                    var stringObject = castObject.ToString();
+                                    if (stringObject != null) {
+                                        return (T)(object)stringObject;
+                                    }
+                                } else {
+                                    return output;
+                                }
+                            } else {
+                                return (T)obj;
+                            }
+                        } catch (Exception ex) {
+                            Console.WriteLine("Exception in GetObjectPropertyValueStandard: " + ex.Message);
+                        }
+                    }
+                }
+            }
+        }
+
+        return output;
+    }
+
+    protected string GetObjectPropertyValueJson(System.Text.Json.JsonElement element, string property)
+    {
+        string output = String.Empty;
+
+        try {
+            // Find the case-sensitive property name
+            var document = System.Text.Json.JsonDocument.Parse(element.ToString());
+            if (document != null) {
+                foreach (var prop in document.RootElement.EnumerateObject()) {
+                    if (prop.Name.ToLower() == property.ToLower()) {
+                        property = prop.Name;
+                        break;
+                    }
+                }
+            }
+
+            var elem = element.GetProperty(property);
+            var type = elem.ValueKind;
+
+            switch (type) {
+                case System.Text.Json.JsonValueKind.Array:
+                    break;
+
+                case System.Text.Json.JsonValueKind.False:
+                    output = "{{boolean:false}}";
+                    break;
+
+                case System.Text.Json.JsonValueKind.Null:
+                    break;
+
+                case System.Text.Json.JsonValueKind.Number:
+                    var numberAsString = elem.GetRawText();
+                    if (!String.IsNullOrWhiteSpace(numberAsString)) {
+                        numberAsString = numberAsString.Trim();
+
+                        if (numberAsString.Contains(".") || numberAsString.Contains(",")) {
+                            // try a decimal value
+                            try {
+                                var numberDecimal = elem.GetDecimal();
+                                output = numberDecimal.ToString();
+                            } catch {
+                                output = numberAsString;
+                            }
+                        } else {
+                            try {
+                                var numberInt32 = elem.GetInt32();
+                                output = numberInt32.ToString();
+                            } catch {
+                                output = numberAsString;
+                            }
+                        }
+                    }
+
+                    try {
+                        var n = elem.GetDecimal();
+                        output = n.ToString();
+                    } catch {
+                        try {
+                            var n2 = elem.GetDouble();
+                            output = n2.ToString();
+                        } catch {
+                            try {
+                                var n3 = elem.GetInt32();
+                                output = n3.ToString();
+                            } catch { }
+                        }
+                    }
+                    break;
+
+                case System.Text.Json.JsonValueKind.Object:
+                    break;
+
+                case System.Text.Json.JsonValueKind.String:
+                    output = StringOrDateValue(elem.GetString());
+                    break;
+
+                case System.Text.Json.JsonValueKind.True:
+                    output = "{{boolean:true}}";
+                    break;
+
+                case System.Text.Json.JsonValueKind.Undefined:
+                    output = "?";
+                    break;
+            }
+        } catch { }
+
+        return output;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        RenderTable();
+    }
+
+    protected override void OnInitialized()
+    {
+        //RenderTable();
+    }
+
+    protected override void OnParametersSet()
+    {
+        RenderTable();
+    }
+
+    protected void PageNavigationClicked(int page)
+    {
+        if (NavigationCallbackHander != null) {
+            NavigationCallbackHander.Invoke("page", page);
+        }
+    }
+
+    protected void RecordsPerPageSelected(ChangeEventArgs e)
+    {
+        int count = -1;
+
+        if (e != null && e.Value != null) {
+            try {
+                count = Convert.ToInt32(e.Value);
+            } catch { }
+        }
+
+        if (count > -1 && NavigationCallbackHander != null) {
+            NavigationCallbackHander.Invoke("count", count);
+        }
+    }
+
+    protected void RenderTable()
+    {
+        if (UseBootstrap != null) {
+            _useBootstrap = (bool)UseBootstrap;
+        } else {
+            _useBootstrap = true;
+        }
+
+        if (ActionHandlers != null && ActionHandlers.Count() > 0) {
+            _actionHandlers = ActionHandlers.ToList();
+
+            _useActionHandler = true;
+            _showActionButtons = _actionHandlers.Where(x => !String.IsNullOrWhiteSpace(x.ActionElement)).Count();
+        }
+
+        if (!String.IsNullOrWhiteSpace(BooleanIcon)) {
+            _booleanIcon = BooleanIcon;
+        } else {
+            _booleanIcon = "true";
+        }
+
+        if (CenterItems != null && CenterItems.Any()) {
+            _centerItems = CenterItems;
+        }
+
+        _config = new Config {
+            IconFirstRecord = "|<",
+            IconLastRecord = ">|",
+            IconNextRecord = ">",
+            IconPreviousRecord = "<",
+            TextFirstRecord = "First Record",
+            TextLastRecord = "Last Record",
+            TextNextRecord = "Next Record",
+            TextOf = "of",
+            TextPreviousRecord = "Previous Record",
+            TextRecord = "Record",
+            TextRecords = "Records",
+            TextRecordsPerPage = "Records Per Page",
+            TextShowing = "Showing",
+            TextShowingAllRecords = "Showing All Records",
+        };
+
+        if (Configuration != null) {
+            if (!String.IsNullOrWhiteSpace(Configuration.IconFirstRecord)) {
+                _config.IconFirstRecord = Configuration.IconFirstRecord;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.IconLastRecord)) {
+                _config.IconLastRecord = Configuration.IconLastRecord;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.IconNextRecord)) {
+                _config.IconNextRecord = Configuration.IconNextRecord;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.IconPreviousRecord)) {
+                _config.IconPreviousRecord = Configuration.IconPreviousRecord;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.TextFirstRecord)) {
+                _config.TextFirstRecord = Configuration.TextFirstRecord;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.TextLastRecord)) {
+                _config.TextLastRecord = Configuration.TextLastRecord;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.TextNextRecord)) {
+                _config.TextNextRecord = Configuration.TextNextRecord;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.TextOf)) {
+                _config.TextOf = Configuration.TextOf;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.TextPreviousRecord)) {
+                _config.TextPreviousRecord = Configuration.TextPreviousRecord;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.TextRecord)) {
+                _config.TextRecord = Configuration.TextRecord;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.TextRecords)) {
+                _config.TextRecords = Configuration.TextRecords;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.TextRecordsPerPage)) {
+                _config.TextRecordsPerPage = Configuration.TextRecordsPerPage;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.TextShowing)) {
+                _config.TextShowing = Configuration.TextShowing;
+            }
+            if (!String.IsNullOrWhiteSpace(Configuration.TextShowingAllRecords)) {
+                _config.TextShowingAllRecords = Configuration.TextShowingAllRecords;
+            }
+        }
+
+        if (ExtraRowDataItems != null && ExtraRowDataItems.Count() > 0) {
+            _extraRowData = ExtraRowDataItems.ToList();
+            _hasExtraData = true;
+        } else {
+            _extraRowData = new List<ExtraRowData>();
+            _hasExtraData = false;
+        }
+
+        if (Formatters != null && Formatters.Any()) {
+            _formatters = Formatters.ToList();
+        }
+
+        if (IncludeCheckboxes != null) {
+            _includeCheckboxes = (bool)IncludeCheckboxes;
+        } else {
+            _includeCheckboxes = false;
+        }
+
+        if (NavigationLocation != null) {
+            switch (NavigationLocation) {
+                case NavLocation.Both:
+                    _navLocation = NavLocation.Both;
+                    break;
+                case NavLocation.Top:
+                    _navLocation = NavLocation.Top;
+                    break;
+                case NavLocation.Bottom:
+                    _navLocation = NavLocation.Bottom;
+                    break;
+            }
+        }
+
+        if (RecordData != null) {
+            _recordset = RecordData;
+
+            if (_recordset.Records != null && _recordset.Records.Any()) {
+                if(_checkedItems.Length < _recordset.Records.Count()) {
+                    _checkedItems = new bool[_recordset.Records.Count()];
+                }
+            } else {
+                _checkedItems = [];
+            }
+        } else {
+            _checkedItems = [];
+        }
+
+        if (RecordsPerPageOptions != null && RecordsPerPageOptions.Any()) {
+            _recordsPerPageOptions = RecordsPerPageOptions.ToList();
+        }
+
+        if (RowClasses != null && RowClasses.Any()) {
+            _rowClasses = RowClasses.ToList();
+        }
+
+        if (!String.IsNullOrWhiteSpace(_recordset.Sort)) {
+            _sort = _recordset.Sort;
+        } else {
+            _sort = "";
+        }
+
+        if (!String.IsNullOrWhiteSpace(_recordset.SortOrder)) {
+            _sortOrder = _recordset.SortOrder.ToUpper();
+        } else {
+            _sortOrder = "ASC";
+        }
+
+        if (!String.IsNullOrWhiteSpace(TableClass)) {
+            _tableClass = TableClass;
+        } else {
+            if (_useBootstrap) {
+                _tableClass = "table table-sm";
+            } else {
+                _tableClass = "paged-recordset-table";
+            }
+        }
+
+        if (!String.IsNullOrWhiteSpace(TableHeaderRowClass)) {
+            _tableHeaderRowClass = TableHeaderRowClass;
+        } else {
+            _tableHeaderRowClass = "table-dark";
+        }
+    }
+
+    protected void RowClicked(object record)
+    {
+        if (_useActionHandler && _showActionButtons == 0) {
+            // Get the first action handler to invoke this callback.
+            if (_actionHandlers.Any()) {
+                var handler = _actionHandlers[0];
+                if (handler != null && handler.CallbackHandler != null) {
+                    handler.CallbackHandler.Invoke(record);
+                }
+            }
+        }
+    }
+
+    protected string StringOrDateValue(string? input)
+    {
+        string output = String.Empty;
+
+        if (!String.IsNullOrWhiteSpace(input)) {
+            output = input;
+
+            if (output.Length > 25 && output.Substring(10, 1) == "T") {
+                try {
+                    DateTime d = Convert.ToDateTime(output);
+                    if (!output.EndsWith("Z")) {
+                        output += "Z";
+                    }
+                } catch { }
+            }
+        }
+
+        return output;
+    }
+
+    protected string StringValue(string? input)
+    {
+        return !String.IsNullOrWhiteSpace(input) ? input : String.Empty;
+    }
+
+    protected void ToggleAllCheckboxes(ChangeEventArgs e)
+    {
+        bool isChecked = false;
+
+        if (e != null && e.Value != null) {
+            try {
+                isChecked = Convert.ToBoolean(e.Value);
+            } catch { }
+        }
+
+        if (_recordset.Records != null && _recordset.Records.Any()) {
+            for (int i = 0; i < _checkedItems.Length; i++) {
+                _checkedItems[i] = isChecked;
+            }
+
+            CallCheckboxCallbackHandler();
+        }
+
+        StateHasChanged();
+    }
+
+    protected void ToggleCheckbox(ChangeEventArgs e, int index)
+    {
+        if (e != null && e.Value != null) {
+            try {
+                bool isChecked = Convert.ToBoolean(e.Value);
+                _checkedItems[index] = isChecked;
+                CallCheckboxCallbackHandler();
+
+                StateHasChanged();
+            } catch { }
+        }
+    }
+
+    #region DataObjects
+    public enum NavLocation
+    {
+        Top,
+        Bottom,
+        Both,
+    }
+
+    /// <summary>
+    /// An action handler.
+    /// </summary>
+    public class ActionHandler
+    {
+        /// <summary>
+        /// REQUIRED: The function that will be invoked.
+        /// </summary>
+        public Action<object>? CallbackHandler { get; set; }
+
+        /// <summary>
+        /// OPTIONAL: Any text or HTML element to use for the action handler. This can be empty if you are only
+        /// using a single handler. In that case the entire data row will invoke the callback handler. If you
+        /// have more than one action handler then each must include the actionElement as those items will be
+        /// rendered in the first columns of the table view.
+        /// </summary>
+        public string? ActionElement { get; set; }
+
+        /// <summary>
+        /// OPTIONAL: If you only want this handler to be visible if the data row contains a value for a given
+        /// field then enter that data element name here.
+        /// </summary>
+        public string? ShowIfElementHasValue { get; set; }
+
+        /// <summary>
+        /// OPTIONAL: A column title option. If empty no title will be shown in the first column where the action buttons are.
+        /// </summary>
+        public string? ColumnTitle { get; set; }
+
+        /// <summary>
+        /// OPTIONAL: If using a column title this is the optional class to add to that TH element.
+        /// </summary>
+        public string? ColumnClass { get; set; }
+
+        /// <summary>
+        /// OPTIONAL: When clicking on the column title an optional sort field.
+        /// </summary>
+        public string? DataElementName { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a column of data in the recordset.
+    /// </summary>
+    public class Column
+    {
+        /// <summary>
+        /// Text alignment ("left", "center", or "rigt")
+        /// </summary>
+        public string? Align { get; set; }
+        /// <summary>
+        /// The label to show for this column.
+        /// </summary>
+        public string? Label { get; set; }
+        /// <summary>
+        /// Any tip text to show on hover on the column header.
+        /// </summary>
+        public string? TipText { get; set; }
+        /// <summary>
+        /// The name of the column data property.
+        /// </summary>
+        public string? DataElementName { get; set; }
+        /// <summary>
+        /// The type for this data ("text", "datetime", "boolean", etc.)
+        /// </summary>
+        public string? DataType { get; set; }
+        /// <summary>
+        /// Indicates if this column is sortable.
+        /// </summary>
+        public bool Sortable { get; set; }
+        /// <summary>
+        /// Any additional class to add to this header element.
+        /// </summary>
+        public string? Class { get; set; }
+        /// <summary>
+        /// For boolean data types, an optional icon to show for true elements.
+        /// </summary>
+        public string? BooleanIcon { get; set; }
+    }
+
+    /// <summary>
+    /// OPTIONAL: Configuration items to override built-in default values.
+    /// </summary>
+    public class Config
+    {
+        public string? IconFirstRecord { get; set; }
+        public string? IconLastRecord { get; set; }
+        public string? IconNextRecord { get; set; }
+        public string? IconPreviousRecord { get; set; }
+
+        public string? TextFirstRecord { get; set; }
+        public string? TextLastRecord { get; set; }
+        public string? TextNextRecord { get; set; }
+        public string? TextPreviousRecord { get; set; }
+        public string? TextRecord { get; set; }
+        public string? TextRecords { get; set; }
+        public string? TextRecordsPerPage { get; set; }
+
+        public string? TextOf { get; set; }
+        public string? TextShowing { get; set; }
+        public string? TextShowingAllRecords { get; set; }
+    }
+
+    /// <summary>
+    /// Object used for additional row data.
+    /// </summary>
+    public class ExtraRowData
+    {
+        /// <summary>
+        /// The zero-based index of this row that relates to the main Records element.
+        /// </summary>
+        public int Row { get; set; }
+        /// <summary>
+        /// The collection of data values.
+        /// </summary>
+        public List<ExtraRowDataValues> Data { get; set; } = new List<ExtraRowDataValues>();
+    }
+
+    /// <summary>
+    /// The extra row data values object.
+    /// </summary>
+    public class ExtraRowDataValues
+    {
+        public string Label { get; set; } = "";
+        public string Value { get; set; } = "";
+    }
+
+    /// <summary>
+    /// Used for specifying custom formatters.
+    /// </summary>
+    public class Formatter
+    {
+        /// <summary>
+        /// The data type this formatter will handle. Must match the column data type.
+        /// </summary>
+        public string DataType { get; set; } = "";
+        /// <summary>
+        /// <para>The callback handler that will format this data. This is a delegate function that returns a string.
+        /// There are several types of functions you can use:</para>
+        /// <para>Func&lt;string, string&gt; - A function that receives a string with the value and returns a string with the formatted value.</para>
+        /// <para>Func&lt;string, int, string&gt; - A function that a string with the value and the zero-based index of the current record and returns a string with the formatted value.</para>
+        /// <para>Func&lt;string, object, string&gt; - A function that receives a string with the value and the current record object and returns a string with the formatted value.</para>
+        /// <para>Func&lt;object, string&gt; - A function that receives the current record object and returns a string with the formatted value.</para>
+        /// </summary>
+        public Delegate? CallbackHandler { get; set; }
+    }
+
+    /// <summary>
+    /// The recordset data passed to the Paged Recordset control.
+    /// </summary>
+    public class Recordset
+    {
+        /// <summary>
+        /// The configuration of your data columns in the data set.
+        /// </summary>
+        public List<Column> Columns { get; set; } = new List<Column>();
+        /// <summary>
+        /// The current page of data.
+        /// </summary>
+        public int CurrentPage { get; set; }
+        /// <summary>
+        /// The total number of data pages in the recordset.
+        /// </summary>
+        public int TotalPages { get; set; }
+        /// <summary>
+        /// The total number of records in the entire data set.
+        /// </summary>
+        public int TotalRecords { get; set; }
+        /// <summary>
+        /// The actual array of data records. Depending on how your app
+        /// serializes data this could either be a C# object or a System.Text.Json.JsonElement
+        /// object. Either are supported.
+        /// </summary>
+        public IEnumerable<object>? Records { get; set; }
+        /// <summary>
+        /// The number of records to show per page.
+        /// </summary>
+        public int RecordsPerPage { get; set; }
+        /// <summary>
+        /// The column current used to sort the data.
+        /// </summary>
+        public string? Sort { get; set; }
+        /// <summary>
+        /// The current sort order ("ASC" or "DESC")
+        /// </summary>
+        public string? SortOrder { get; set; }
+    }
+
+    #endregion
+}

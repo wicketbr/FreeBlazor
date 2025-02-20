@@ -1,0 +1,327 @@
+﻿@page "/PagedRecordset"
+
+<h1>Paged Recordset</h1>
+
+<PagedRecordset 
+    @ref="_pagedRecordset"
+    ActionHandlers="_actionHandlers"
+    CheckboxCallbackHandler="CheckboxesUpdated"
+    ExtraRowDataItems="_extraRowData"
+    Formatters="_pagedRecordsetFormatters"
+    IncludeCheckboxes="true"
+    NavigationCallbackHander="NavigationCallbackHander"
+    RecordData="_data"
+    TableClass="table table-sm paged-recordset-table"
+    UseBootstrap="true" 
+/>
+
+<div class="mb-2">
+    @if (_checkedItems.Any()) {
+        <span>Selected Items: @String.Join(", ", _checkedItems)</span>
+    } else {
+        <span>No Items Selected</span>
+    }
+</div>
+
+<div class="mb-2">
+    <button type="button" class="btn btn-primary" @onclick="CheckSomeItems">
+        Check Some Items
+    </button>
+
+    <button type="button" class="btn btn-dark" @onclick="ToggleExtraRowData">
+        Toggle Extra Row Data
+    </button>
+</div>
+
+<div class="mt-2">@((MarkupString)_results)</div>
+
+@code {
+    List<PagedRecordset.ActionHandler> _actionHandlers = new List<PagedRecordset.ActionHandler>();
+    protected int[] _checkedItems = new int[] { };
+    PagedRecordset.Config _config = new PagedRecordset.Config();
+    PagedRecordset.Recordset _data = new PagedRecordset.Recordset();
+    List<PagedRecordset.ExtraRowData> _extraRowData = new List<PagedRecordset.ExtraRowData>();
+    protected string _results = "";
+    List<User> users = new List<User>();
+
+    PagedRecordset _pagedRecordset = null!;
+
+    List<PagedRecordset.Formatter> _pagedRecordsetFormatters = new List<PagedRecordset.Formatter>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) {
+            _pagedRecordsetFormatters = new List<PagedRecordset.Formatter> {
+                new PagedRecordset.Formatter {
+                    DataType = "email",
+                    CallbackHandler = FormatEmail,
+                },
+            };
+
+            _actionHandlers = new List<PagedRecordset.ActionHandler> {
+                new PagedRecordset.ActionHandler {
+                    CallbackHandler = OnItemSelected,
+                    ActionElement =
+                        "<button type=\"button\" class=\"btn btn-xs btn-primary nowrap action-button\"><i class=\"fa fa-edit\"></i> Edit</button>",
+                    ShowIfElementHasValue = "Enabled",
+                },
+            };
+
+            _data = new PagedRecordset.Recordset {
+                Columns = new List<PagedRecordset.Column> {
+                    new PagedRecordset.Column {
+                        DataElementName = "first",    
+                        DataType = "text",
+                        Sortable = true,
+                        Label = "First Name",
+                    },    
+                    new PagedRecordset.Column {
+                        DataElementName = "last",
+                        DataType = "text",
+                        Sortable = true,
+                        Label = "Last Name",
+                    },
+                    new PagedRecordset.Column {
+                        DataElementName = "email",
+                        DataType = "email",
+                        Sortable = true,
+                        Label = "Email Address",
+                    },
+                    new PagedRecordset.Column {
+                        DataElementName = "Enabled",
+                        DataType = "boolean",
+                        Sortable = true,
+                        Label = "Enabled",
+                    },
+                },
+                CurrentPage = 1,
+                Records = [],
+                RecordsPerPage = 5,
+                Sort = "first",
+                SortOrder = "ASC",
+                TotalPages = 0,
+                TotalRecords = 0,
+            };
+
+            await LoadData();
+        }
+    }
+
+    protected void CheckboxesUpdated(int[] selected)
+    {
+        _checkedItems = selected;
+        StateHasChanged();
+    }
+
+    protected void CheckSomeItems()
+    {
+        _pagedRecordset.CheckItems([0, 2]);
+    }
+
+    protected async Task LoadData()
+    {
+        users = new List<User> {
+            new User { UserId = Guid.NewGuid(), First = "Edward", Last = "Gibson", Email = "edward.gibson@local", Enabled = true },
+            new User { UserId = Guid.NewGuid(), First = "Joe", Last = "Nash", Email = "joe.nash@local", Enabled = false },
+            new User { UserId = Guid.NewGuid(), First = "Audrey", Last = "Lawrence", Email = "audrey.lawrence@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Piers", Last = "North", Email = "piers.north@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Charles", Last = "MacDonald", Email = "charles.macdonald@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Emily", Last = "Alsop", Email = "emily.alsop@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Alan", Last = "Abraham", Email = "alan.abraham@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Felicity", Last = "Marshall", Email = "felicity.marshall@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Amy", Last = "Lambert", Email = "amy.lambert@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Eric", Last = "Chapman", Email = "eric.chapman@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Yvonne", Last = "Mackay", Email = "yvonne.mackay@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Colin", Last = "Gray", Email = "colin.gray@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Boris", Last = "Harris", Email = "boris.harris@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Edward", Last = "Tucker", Email = "edward.tucker@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Rebecca", Last = "Bower", Email = "rebecca.bower@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Brian", Last = "Piper", Email = "brian.piper@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Megan", Last = "McGrath", Email = "megan.mcgrath@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Dan", Last = "Kelly", Email = "dan.kelly@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Jake", Last = "Lyman", Email = "jake.lyman@local", Enabled = true  },
+            new User { UserId = Guid.NewGuid(), First = "Nicholas", Last = "Martin", Email = "nicholas.martin@local", Enabled = true  },
+        };
+
+        // Get the data sorted.
+        var data = users;
+        bool ascending = _data.SortOrder?.ToUpper() == "ASC";
+
+        if (String.IsNullOrWhiteSpace(_data.Sort)) {
+            _data.Sort = "first";
+        }
+
+        switch (_data.Sort.ToUpper()) {
+            case "FIRST":
+                data = ascending
+                    ? users.OrderBy(x => x.First).ThenBy(x => x.Last).ToList()
+                    : users.OrderByDescending(x => x.First).ThenByDescending(x => x.Last).ToList();
+                break;
+
+            case "LAST":
+                data = ascending
+                    ? users.OrderBy(x => x.Last).ThenBy(x => x.First).ToList()
+                    : users.OrderByDescending(x => x.Last).ThenByDescending(x => x.First).ToList();
+                break;
+
+            case "EMAIL":
+                data = ascending
+                    ? users.OrderBy(x => x.Email).ThenBy(x => x.First).ThenBy(x => x.Last).ToList()
+                    : users.OrderByDescending(x => x.Email).ThenByDescending(x => x.First).ThenByDescending(x => x.Last).ToList();
+                break;
+        }
+
+        int totalRecords = data.Count();
+
+        _data.TotalRecords = data.Count();
+
+        if(totalRecords > 0) {
+            if(_data.RecordsPerPage > totalRecords) {
+                _data.CurrentPage = 1;
+                _data.TotalPages = 1;
+            } else {
+                // Figure out the page count
+                if(_data.CurrentPage < 1) {
+                    _data.CurrentPage = 1;
+                }
+
+                if(_data.RecordsPerPage < 1) {
+                    _data.RecordsPerPage = 5;
+                }
+
+                decimal decPages = (decimal)totalRecords / (decimal)_data.RecordsPerPage;
+                decPages = Math.Ceiling(decPages);
+
+                _data.TotalPages = (int)decPages;
+
+                if(_data.CurrentPage > _data.TotalPages) {
+                    _data.CurrentPage = _data.TotalPages;
+                }
+
+                if(_data.CurrentPage > 1) {
+                    data = data.Skip((_data.CurrentPage - 1) * _data.RecordsPerPage).Take(_data.RecordsPerPage).ToList();
+                } else {
+                    data = data.Take(_data.RecordsPerPage).ToList();
+                }
+            }
+        }
+
+        _data.Records = data;
+
+        StateHasChanged();
+    }
+
+    protected string FormatEmail(object record)
+    {
+        string output = String.Empty;
+
+        User? user = null;
+        if (record != null) {
+            try {
+                user = (User)record;
+            } catch { }
+        }
+
+        if (user != null) {
+            output = "<a href=\"" + user.Email + "\">" + user.Email + "</a>";
+        }
+
+        return output;
+    }
+
+    protected async void NavigationCallbackHander(string action, object? o)
+    {
+        switch (action.ToLower()) {
+            case "count":
+                int recordsPerPage = -1;
+                try {
+                    recordsPerPage = Convert.ToInt32(o);
+                } catch { }
+                if (recordsPerPage > -1) {
+                    _data.RecordsPerPage = recordsPerPage;
+                    await LoadData();
+                }
+                break;
+
+            case "page":
+                int page = -1;
+                try {
+                    page = Convert.ToInt32(o);
+                } catch { }
+                if (page > -1) {
+                    _data.CurrentPage = page;
+                    await LoadData();
+                }
+                break;
+
+            case "sort":
+                string dataElementName = String.Empty;
+                try {
+                    dataElementName += Convert.ToString(o);
+                } catch { }
+                if (!String.IsNullOrWhiteSpace(dataElementName)) {
+                    string currentSort = _data.Sort + String.Empty;
+                    string currentDirection = _data.SortOrder + String.Empty;
+
+                    if (currentSort.ToLower() == dataElementName.ToLower()) {
+                        if (currentDirection.ToUpper() == "ASC") {
+                            _data.SortOrder = "DESC";
+                        } else {
+                            _data.SortOrder = "ASC";
+                        }
+                    } else {
+                        _data.Sort = dataElementName;
+
+                        if (dataElementName.ToLower() == "lastlogin") {
+                            _data.SortOrder = "DESC";
+                        } else {
+                            _data.SortOrder = "ASC";
+                        }
+                    }
+                    await LoadData();
+                }
+
+                break;
+        }
+    }
+
+    protected void OnItemSelected(object? record)
+    {
+        if(record != null) {
+            var user = (User)record;
+
+            _results = "Selected User: " + user.First + " " + user.Last + " (" + user.Email + ")";
+            StateHasChanged();
+        }
+    }
+
+    protected void ToggleExtraRowData()
+    {
+        if (_extraRowData.Any()) {
+            _extraRowData = new List<PagedRecordset.ExtraRowData>();
+        } else {
+            _extraRowData = new List<PagedRecordset.ExtraRowData> {
+                new PagedRecordset.ExtraRowData {
+                    Row = 0,
+                    Data = new List<PagedRecordset.ExtraRowDataValues> {
+                        new PagedRecordset.ExtraRowDataValues {
+                            Label = "",
+                            Value = "<div>Some extra data for row 0</div>",
+                        },
+                    },
+                },
+            };
+        }
+
+        StateHasChanged();
+    }
+
+    public class User
+    {
+        public Guid UserId { get; set; }
+        public string? First { get; set; }
+        public string? Last { get; set; }
+        public string? Email { get; set; }
+        public bool Enabled { get; set; }
+    }
+}

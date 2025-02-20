@@ -1,0 +1,125 @@
+﻿@if (_values != null && _values.Count > 0) {
+    string buttonContents = "X";
+
+    if (!String.IsNullOrWhiteSpace(RemoveIcon) && !String.IsNullOrWhiteSpace(RemoveText)) {
+        buttonContents = RemoveIcon + " " + RemoveText;
+    } else if (!String.IsNullOrWhiteSpace(RemoveIcon)) {
+        buttonContents = RemoveIcon;
+    } else if (!String.IsNullOrWhiteSpace(RemoveText)) {
+        buttonContents = RemoveText;
+    }
+
+    <table class="string-list">
+        <tbody>
+            @for (int i = 0; i < _values.Count; i++) {
+                var currentIndex = i;
+                var item = _values[i];
+
+                <tr>
+                    <td style="width:auto;">
+                        <input type="text" class="form-control" 
+                            @bind="@_values[currentIndex]"
+                            @bind:event="oninput"
+                            @bind:after="ValuesChanged" />
+                    </td>
+                    <td style="width:1%;">
+                        <button class="@RemoveButtonClass" @onclick="() => RemoveItem(currentIndex)" title="@RemoveTooltip">
+                            @((MarkupString)buttonContents)
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    /// <summary>
+    /// The List&lt;string&gt; values.
+    /// </summary>
+    [Parameter] public List<string> Value { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Option to override the remove button class, which defaults to "btn btn-danger btn-sm".
+    /// </summary>
+    [Parameter] public string RemoveButtonClass { get; set; } = "btn btn-danger btn-sm";
+
+    /// <summary>
+    /// Option to override the default icon for the remove button, which is &lt;i class="fa-solid fa-xmark"&gt;&lt;/i&gt;.
+    /// </summary>
+    [Parameter] public string RemoveIcon { get; set; } = "<i class=\"fa-solid fa-xmark\"></i>";
+
+    /// <summary>
+    /// Option to set some text for the remove button. By default the button only uses an icon.
+    /// </summary>
+    [Parameter] public string RemoveText { get; set; } = "";
+
+    /// <summary>
+    /// Option to override the default tooltip for the remove button, which defaults to "Remove this item".
+    /// </summary>
+    [Parameter] public string RemoveTooltip { get; set; } = "Remove this item";
+
+    /// <summary>
+    /// By convention, this allows the @bind-Value option for two-way binding.
+    /// </summary>
+    [Parameter] public EventCallback<List<string>> ValueChanged { get; set; }
+
+    /// <summary>
+    /// An optional delegate that will be called when the value is updated.
+    /// This delegate will receive no parameter.
+    /// </summary>
+    [Parameter] public Delegate? OnValueChanged { get; set; }
+
+    protected List<string> _values = new List<string>();
+
+    protected override void OnInitialized()
+    {
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (System.Text.Json.JsonSerializer.Serialize(_values) != System.Text.Json.JsonSerializer.Serialize(Value)) {
+            _values = Value;
+        }
+    }
+
+    protected void RemoveItem(int index)
+    {
+        var values = new List<string>();
+        for (int i = 0; i < Value.Count; i++) {
+            if (i != index) {
+                values.Add(Value[i]);
+            }
+        }
+
+        _values = values;
+
+        ValuesChanged();
+    }
+
+    protected void TextValueChanged(ChangeEventArgs e, int index)
+    {
+        string value = String.Empty;
+
+        if (e != null && e.Value != null) {
+            try {
+                value += e.Value.ToString();
+            } catch { }
+            
+        }
+
+        _values[index] = value;
+        ValuesChanged();
+    }
+
+    protected void ValuesChanged()
+    {
+        ValueChanged.InvokeAsync(_values);
+
+        if (OnValueChanged != null) {
+            OnValueChanged.DynamicInvoke();
+        }
+
+        StateHasChanged();
+    }
+}

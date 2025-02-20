@@ -1,0 +1,212 @@
+﻿@if (ShowConfirmation) {
+    <div class="btn-group" role="group">
+        <button type="button" class="@_cancelButtonClass @_buttonSize" @onclick="CancelClicked">
+            @if (!String.IsNullOrWhiteSpace(_cancelIcon)) {
+                @((MarkupString)_cancelIcon)
+            }
+            @if (!String.IsNullOrWhiteSpace(_cancelText)) {
+                <span>@_cancelText</span>
+            }
+        </button>
+        <button type="button" class="@_confirmDeleteButtonClass @_buttonSize" @onclick="DeleteConfirmed">
+            @if (!String.IsNullOrWhiteSpace(_confirmDeleteIcon)) {
+                @((MarkupString)_confirmDeleteIcon)
+            }
+            @if (!String.IsNullOrWhiteSpace(_confirmDeleteText)) {
+                <span>@_confirmDeleteText</span>
+            }
+        </button>
+    </div>
+} else {
+    <button type="button" class="@_deleteButtonClass @_buttonSize" @onclick="DeleteClicked">
+        @if (!String.IsNullOrWhiteSpace(_deleteIcon)) {
+            @((MarkupString)_deleteIcon)
+        }
+        @if (!String.IsNullOrWhiteSpace(_deleteText)) {
+            <span>@_deleteText</span>
+        }
+    </button>
+}
+@code {
+    protected bool ShowConfirmation = false;
+    protected string _buttonSize = "";
+
+    protected string _deleteIcon = "";
+    protected string _deleteText = "";
+    protected string _deleteButtonClass = "";
+
+    protected string _cancelIcon = "";
+    protected string _cancelText = "";
+    protected string _cancelButtonClass = "";
+
+    protected string _confirmDeleteIcon = "";
+    protected string _confirmDeleteText = "";
+    protected string _confirmDeleteButtonClass = "";
+
+    protected string _defaultIconLibrary = "";
+
+    /// <summary>
+    /// The EventCallback for when the Confirm Delete button is clicked.
+    /// </summary>
+    [Parameter] public EventCallback OnConfirmed { get; set; }
+
+    /// <summary>
+    /// An option to override the default delete icon with your own value. Use "none" or "n/a" to hide the icon.
+    /// </summary>
+    [Parameter] public string? DeleteIcon { get; set; }
+
+    /// <summary>
+    /// An option to override the default "Delete" text. Use "none" or "n/a" to hide the text.
+    /// </summary>
+    [Parameter] public string? DeleteText { get; set; }
+
+    /// <summary>
+    /// An option to override the default delete button class of "btn btn-danger"
+    /// </summary>
+    [Parameter] public string? DeleteButtonClass { get; set; }
+
+    /// <summary>
+    /// An option to override teh default cancel icon with your own value. Use "none" or "n/a" to hide the icon.
+    /// </summary>
+    [Parameter] public string? CancelIcon { get; set; }
+
+    /// <summary>
+    /// An option to override the default "Cancel" text. Use "none" or "n/a" to hide the text.
+    /// </summary>
+    [Parameter] public string? CancelText { get; set; }
+
+    /// <summary>
+    /// An option to override the default cancel button class of "btn btn-dark"
+    /// </summary>
+    [Parameter] public string? CancelButtonClass { get; set; }
+
+    /// <summary>
+    /// An option to override teh default confirm delete icon with your own value. Use "none" or "n/a" to hide the icon.
+    /// </summary>
+    [Parameter] public string? ConfirmDeleteIcon { get; set; }
+
+    /// <summary>
+    /// An option to override the default "Confirm Delete" text. Use "none" or "n/a" to hide the text.
+    /// </summary>
+    [Parameter] public string? ConfirmDeleteText { get; set; }
+
+    /// <summary>
+    /// An option to override the default confirm delete button class of "btn btn-danger"
+    /// </summary>
+    [Parameter] public string? ConfirmDeleteButtonClass { get; set; }
+
+    /// <summary>
+    /// If you are not specifying your own icons for the DeleteIcon and CancelIcon properties, then you can
+    /// specify a common icon library to use. The options are 'google' to use the Google open-source Icons or
+    /// 'fa' or 'fontawesome' to use the FontAwesome icon set. Defaults to 'fontawesome' if no option is specified
+    /// and no icons are set for the DeleteIcon and CancelIcon.
+    /// </summary>
+    [Parameter] public string? DefaultIconLibrary { get; set; }
+
+    /// <summary>
+    /// When using the default buttons specify that optional size as "xs", "small", "standard", or "large"
+    /// </summary>
+    [Parameter] public string? ButtonSize { get; set; }
+
+    protected void CancelClicked()
+    {
+        ShowConfirmation = false;
+    }
+
+    protected void DeleteClicked()
+    {
+        ShowConfirmation = true;
+    }
+
+    protected async Task DeleteConfirmed()
+    {
+        ShowConfirmation = false;
+        await OnConfirmed.InvokeAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        SetDefaultValues();
+    }
+
+    protected override void OnParametersSet()
+    {
+        SetDefaultValues();
+    }
+
+    protected void SetDefaultValues()
+    {
+        if (!String.IsNullOrWhiteSpace(ButtonSize)) {
+            switch (ButtonSize.ToLower()) {
+                case "xs":
+                    _buttonSize = "btn-xs";
+                    break;
+
+                case "small":
+                    _buttonSize = "btn-sm";
+                    break;
+
+                case "standard":
+                    break;
+
+                case "large":
+                    _buttonSize = "btn-lg";
+                    break;
+            }
+        }
+
+        _defaultIconLibrary = !String.IsNullOrWhiteSpace(DefaultIconLibrary) ? DefaultIconLibrary : "fontawesome";
+
+        string defaultDeleteIcon = String.Empty;
+        string defaultCancelIcon = String.Empty;
+
+        switch (_defaultIconLibrary.ToLower()) {
+            case "google":
+                defaultDeleteIcon = "<i class=\"icon material-symbols-outlined\">delete</i>";
+                defaultCancelIcon = "<i class=\"icon material-symbols-outlined\">close</i>";
+                break;
+
+            case "fa":
+            case "fontawesome":
+                defaultDeleteIcon = "<i class=\"fas fa-trash\"></i>";
+                defaultCancelIcon = "<i class=\"fas fa-times\"></i>";
+                break;
+        }
+
+        _deleteIcon = !String.IsNullOrWhiteSpace(DeleteIcon) ? DeleteIcon : defaultDeleteIcon;
+        _cancelIcon = !String.IsNullOrWhiteSpace(CancelIcon) ? CancelIcon : defaultCancelIcon;
+        _confirmDeleteIcon = !String.IsNullOrWhiteSpace(ConfirmDeleteIcon) ? ConfirmDeleteIcon : defaultDeleteIcon;
+
+        if(_deleteIcon.ToLower() == "none" || _deleteIcon.ToLower() == "n/a") {
+            _deleteIcon = "";
+        }
+
+        if(_cancelIcon.ToLower() == "none" || _cancelIcon.ToLower() == "n/a") {
+            _cancelIcon = "";
+        }
+
+        if(_confirmDeleteIcon.ToLower() == "none" || _confirmDeleteIcon.ToLower() == "n/a") {
+            _confirmDeleteIcon = "";
+        }
+
+        _deleteText = !String.IsNullOrWhiteSpace(DeleteText) ? DeleteText : "Delete";
+        _cancelText = !String.IsNullOrWhiteSpace(CancelText) ? CancelText : "Cancel";
+        _confirmDeleteText = !String.IsNullOrWhiteSpace(ConfirmDeleteText) ? ConfirmDeleteText : "Confirm Delete";
+
+        if(_deleteText.ToLower() == "none" || _deleteText.ToLower() == "n/a") {
+            _deleteText = "";
+        }
+
+        if(_cancelText.ToLower() == "none" || _cancelText.ToLower() == "n/a") {
+            _cancelText = "";
+        }
+
+        if(_confirmDeleteText.ToLower() == "none" || _confirmDeleteText.ToLower() == "n/a") {
+            _confirmDeleteText = "";
+        }
+
+        _deleteButtonClass = !String.IsNullOrWhiteSpace(DeleteButtonClass) ? DeleteButtonClass : "btn btn-danger";
+        _cancelButtonClass = !String.IsNullOrWhiteSpace(CancelButtonClass) ? CancelButtonClass : "btn btn-dark";
+        _confirmDeleteButtonClass = !String.IsNullOrWhiteSpace(ConfirmDeleteButtonClass) ? ConfirmDeleteButtonClass : "btn btn-danger";
+    }
+}

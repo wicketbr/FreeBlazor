@@ -1,0 +1,288 @@
+﻿@inject IJSRuntime jsRuntime
+<input type="text" class="@_class" placeholder="@_placeholderText" disabled="@Disabled"
+       aria-autocomplete="list" aria-haspopup="true" autocomplete="off" role="combobox"
+       id="@_id" style="@_errorStyle" @onkeydown="@OnKeyPress" tabindex="@(Disabled ? "-1" : TabIndex.ToString())" />
+@if (_results != null) {
+    int index = -1;
+    <div id="@_searchId" class="autocomplete-search-results" style="display:none;">
+        @foreach (var item in _results) {
+            index++;
+            if (String.IsNullOrWhiteSpace(item.key)) {
+                <div class="disabled">@item.label</div>
+            } else {
+                <div class="@(index == _selectedIndex ? "result-item selected": "result-item")" @onclick="@(() => SelectedItem(item))">@item.label</div>
+            }
+        }
+    </div>
+}
+@code {
+    protected string _class = "";
+    protected string _errorStyle = "";
+    protected string _id = "";
+    protected int _minimumCharacters = 3;
+    protected string _placeholderText = "";
+    protected List<(string key, string label)> _results = new List<(string key, string label)>();
+    protected string _searchId = "";
+    protected int _selectedIndex = -1;
+    protected string _value = "";
+
+    Delayer delayer = new Delayer();
+    private IJSObjectReference? jsModule;
+
+    /// <summary>
+    /// An optional class to add to the input element
+    /// </summary>
+    [Parameter]
+    public string Class { get; set; } = "";
+
+    /// <summary>
+    /// Option to disable the input.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; } = false;
+
+    /// <summary>
+    /// Required callback function that will take the current search text and return a list of Tuple<string, string> objects
+    /// </summary>
+    [Parameter]
+    public Func<string, Task<List<(string key, string label)>?>>? GetAutoCompleteItems { get; set; }
+
+    [Parameter]
+    public bool HighlightFirstMatch { get; set; }
+
+    /// <summary>
+    /// An optional Id for the input element (defaults to a random Guid)
+    /// </summary>
+    [Parameter]
+    public string Id { get; set; } = Guid.NewGuid().ToString().Replace("-", "");
+
+    [Parameter]
+    public bool MatchParentWidth { get; set; } = true;
+
+    /// <summary>
+    /// The minimum characters required to perform a lookup (defaults to 2)
+    /// </summary>
+    [Parameter]
+    public int MinimumCharacters { get; set; } = 2;
+
+    /// <summary>
+    /// The method that will be invoked when an item is selected. The action will pass
+    /// a Tuple<string, string> for the selected item.
+    /// </summary>
+    [Parameter]
+    public EventCallback<(string key, string label)> OnSelected { get; set; }
+
+    /// <summary>
+    /// The time in milliseconds after stopping typing before the lookup is started.
+    /// </summary>
+    [Parameter]
+    public int LookupDelay { get; set; } = 500;
+
+    /// <summary>
+    /// Optional placeholder text.
+    /// </summary>
+    [Parameter]
+    public string PlaceholderText { get; set; } = "";
+
+    /// <summary>
+    /// Optional tab index for the element.
+    /// </summary>
+    [Parameter]
+    public int TabIndex { get; set; } = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) {
+            jsModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import",
+                "./_content/FreeBlazor/AutoComplete.Razor.js?v=" + Guid.NewGuid().ToString().Replace("-", ""));
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        RenderLookup();
+    }
+
+    protected override void OnParametersSet(){
+        _class = Class;
+        _id = Id;
+        _searchId = "results_" + _id;
+        _minimumCharacters = MinimumCharacters;
+        _placeholderText = PlaceholderText;
+    }
+
+    protected async Task OnKeyPress(KeyboardEventArgs args)
+    {
+        var key = args.Code != null ? args.Code : args.Key;
+
+        if (key == "ArrowDown") {
+            if (_results.Count(x => !String.IsNullOrWhiteSpace(x.key)) > 1) {
+                _selectedIndex = _selectedIndex + 1;
+                if (_selectedIndex > (_results.Count() - 1)) {
+                    _selectedIndex = 0;
+                }
+
+                // Make sure this isn't a disabled item.
+                var item = _results[_selectedIndex];
+                while (String.IsNullOrWhiteSpace(item.key)) {
+                    _selectedIndex = _selectedIndex + 1;
+                    if (_selectedIndex > (_results.Count() - 1)) {
+                        _selectedIndex = 0;
+                    }
+                    item = _results[_selectedIndex];
+                }
+            }
+
+        } else if (key == "ArrowUp") {
+            if (_results.Count(x => !String.IsNullOrWhiteSpace(x.key)) > 1) {
+                _selectedIndex = _selectedIndex - 1;
+                if (_selectedIndex < 0) {
+                    _selectedIndex = _results.Count() - 1;
+                }
+
+                // Make sure this isn't a disabled item.
+                var item = _results[_selectedIndex];
+                while (String.IsNullOrWhiteSpace(item.key)) {
+                    _selectedIndex = _selectedIndex - 1;
+                    if (_selectedIndex < 0) {
+                        _selectedIndex = _results.Count() - 1;
+                    }
+                    item = _results[_selectedIndex];
+                }
+            }
+
+
+        } else if (key == "Enter") {
+            if (_selectedIndex > -1) {
+                await ReturnValue();
+            }
+        } else if (key == "Escape") {
+            if (jsModule != null) {
+                await ReturnValue(true);
+            }
+        } else if (key == "Tab") {
+            if (jsModule != null) {
+                await ReturnValue();
+            }
+        } else {
+            Delay(CheckUserInput, LookupDelay);
+        }
+    }
+
+    protected async Task CheckUserInput()
+    {
+        _selectedIndex = -1;
+        string value = String.Empty;
+
+        if (jsModule != null) {
+            value = await jsModule.InvokeAsync<string>("GetValue", _id);
+        }
+
+        _results = new List<(string key, string label)>();
+        if (GetAutoCompleteItems != null && !String.IsNullOrWhiteSpace(value) && value.Length >= _minimumCharacters) {
+            var results = await GetAutoCompleteItems(value);
+            if (results != null && results.Any()) {
+                _results = results;
+            }
+        }
+
+        if (_results.Any()) {
+            if (HighlightFirstMatch) {
+                for (int x = 0; x < _results.Count(); x++) {
+                    if (_selectedIndex == -1) {
+                        if (_results[x].label.ToLower().Contains(value.ToLower())) {
+                            _selectedIndex = x;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (jsModule != null) {
+                await jsModule.InvokeVoidAsync("OpenPopup", _searchId, _id, MatchParentWidth);
+            }
+        } else {
+            if (jsModule != null) {
+                await jsModule.InvokeVoidAsync("ClosePopup", _searchId);
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    protected void Delay(Func<Task> action, int milliseconds = 500)
+    {
+        delayer.Delay(milliseconds, action);
+    }
+
+    protected void RenderLookup()
+    {
+        _errorStyle = "";
+        _class = Class;
+        _id = Id;
+        _searchId = "results_" + _id;
+        _minimumCharacters = MinimumCharacters;
+        _placeholderText = PlaceholderText;
+
+        if (GetAutoCompleteItems == null) {
+            string error = "Missing Required Parameter GetAutoCompleteItems";
+
+            Console.WriteLine(error);
+            _errorStyle = "background-color:red; color:#fff;";
+            _placeholderText = "Missing Required Parameter 'GetAutoCompleteItems'";
+        }
+    }
+
+    public async Task ReturnValue(bool closeOnly = false)
+    {
+        if (jsModule != null) {
+            await jsModule.InvokeVoidAsync("ClosePopup", _searchId);
+            await jsModule.InvokeVoidAsync("ClearValue", _id);
+        }
+
+        if(_selectedIndex > -1 && !closeOnly) {
+            var output = _results[_selectedIndex];
+            await OnSelected.InvokeAsync(output);
+        }
+    }
+
+    public async Task SelectedItem((string key, string label) item)
+    {
+        if (jsModule != null) {
+            await jsModule.InvokeVoidAsync("ClosePopup", _searchId);
+            await jsModule.InvokeVoidAsync("ClearValue", _id);
+        }
+
+        await OnSelected.InvokeAsync(item);
+    }
+
+    class Delayer
+    {
+        System.Timers.Timer? timer;
+        DateTime timerStarted { get; set; } = DateTime.UtcNow.AddYears(-1);
+
+        public void Delay(int interval, Func<Task> action)
+        {
+            timer?.Stop();
+            timer = null;
+
+            timer = new System.Timers.Timer() { Interval = interval, Enabled = false, AutoReset = false };
+            timer.Elapsed += (s, r) => {
+                if (timer == null) {
+                    return;
+                }
+
+                timer?.Stop();
+                timer = null;
+
+                try {
+                    Task.Run(action);
+                } catch (TaskCanceledException) {
+
+                }
+            };
+
+            timer.Start();
+        }
+    }
+}

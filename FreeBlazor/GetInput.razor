@@ -1,0 +1,416 @@
+﻿@inject IJSRuntime jsRuntime
+@if (!String.IsNullOrWhiteSpace(_instructions)) {
+    <div class="mt-2 mb-2">
+        <label for="@_id">@((MarkupString)_instructions)</label>
+    </div>
+}
+
+<div class="mb-2">
+    @switch (_userInputType) {
+        case InputType.Text:
+            <input id="@_id" type="text" class="@_class" 
+                @bind="_singleValue" @bind:event="oninput"
+                @onkeyup="SingleValueKeyUp" placeholder="@_placeholderText" />
+            break;
+
+        case InputType.Textarea:
+            <textarea id="@_id" class="@_class" 
+                @bind="_singleValue" @bind:event="oninput" 
+                @onkeyup="SingleValueKeyUp" placeholder="@_placeholderText"></textarea>
+            break;
+
+        case InputType.Select:
+            if (_userInputOptions.Any()) {
+                <select id="@_id" class="@_class" @onchange="SingleValueChanged">
+                    @if (!String.IsNullOrWhiteSpace(_placeholderText)) {
+                        <option value="">@_placeholderText</option>
+                    }
+                    @foreach(var item in _userInputOptions) {
+                        <option value="@item.Key">@item.Value</option>
+                    }
+                </select>
+            } else {
+                <div>No UserInputOptions Provided</div>
+            }
+            break;
+
+        case InputType.Multiselect:
+            if (_userInputOptions.Any()) {
+                <select id="@_id" class="@_class" @onchange="MultiSelectChanged" multiple="multiple" size="@_multiSelectRows">
+                    @foreach (var item in _userInputOptions) {
+                        <option value="@item.Key">@item.Value</option>
+                    }
+                </select>
+
+            } else {
+                <div>No UserInputOptions Provided</div>
+            }
+            break;
+
+        case InputType.Radio:
+            int radioIndex = -1;
+
+            if (_userInputOptions.Any()) {
+                @foreach(var item in _userInputOptions) {
+                    radioIndex++;
+                    string radioId = _id + "-" + radioIndex.ToString();
+                    <div>
+                        <input type="radio" id="@radioId" name="@_id" value="@item.Key" @onchange="RadioItemChange" />
+                        <label for="@radioId">@item.Value</label>
+                    </div>
+                }
+            } else {
+                <div>No UserInputOptions Provided</div>
+            }
+            break;
+
+        case InputType.Checkbox:
+            if (_checkboxItems.Any()) {
+                foreach(var item in _checkboxItems) {
+                    string checkboxId = _id + "-" + item.Index.ToString();
+                    <div>
+                        <input type="checkbox" id="@checkboxId" @onchange="@((ChangeEventArgs e) => CheckboxChanged(e, item.Index))" />
+                        <label for="@checkboxId">@item.Label</label>
+                    </div>
+                }
+            } else {
+                <div>No UserInputOptions Provided</div>
+            }
+            break;
+
+        case InputType.Confirmation:
+            <div id="@_id" class="@_class">
+                <button type="button" class="@_confirmOkButtonClass" @onclick="ConfirmTrue">
+                    @if (!String.IsNullOrEmpty(_confirmOkButtonIcon)) {
+                        if (_confirmOkButtonIcon.Contains("<")) {
+                            @((MarkupString)_confirmOkButtonIcon)
+                        } else {
+                            <i class="@_confirmOkButtonIcon me-2"></i>
+                        }
+                    }
+                    @((MarkupString)_confirmOkButtonText)
+                </button>
+                <button type="button" class="@_confirmCancelButtonClass" @onclick="ConfirmFalse">
+                    @if (!String.IsNullOrEmpty(_confirmCancelButtonIcon)) {
+                        if (_confirmCancelButtonIcon.Contains("<")) {
+                            @((MarkupString)_confirmCancelButtonIcon)
+                        } else {
+                            <i class="@_confirmCancelButtonIcon me-2"></i>
+                        }
+                    }
+                    @((MarkupString)_confirmCancelButtonText)
+                </button>
+            </div>
+            break;
+    }
+</div>
+@code {
+    public enum InputType
+    {
+        Text,
+        Textarea,
+        Select,
+        Multiselect,
+        Radio,
+        Checkbox,
+        Confirmation
+    }
+
+    private class CheckboxItem
+    {
+        public int Index { get; set; }
+        public string Label { get; set; } = "";
+        public string Value { get; set; } = "";
+        public bool Selected { get; set; }
+    }
+
+    /// <summary>
+    /// An optional class to add to the input element(s).
+    /// </summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>
+    /// Optional text to use for a confirmation input for the Cancel button to override the default of "OK".
+    /// </summary>
+    [Parameter] public string? ConfirmCancelButtonText { get; set; }
+
+    /// <summary>
+    /// Optional class to use for the confirmation input class for the Cancel button to override the default of "btn btn-dark"
+    /// </summary>
+    [Parameter] public string? ConfirmCancelButtonClass { get; set; }
+
+    /// <summary>
+    /// Optional icon to show for the confirmation cancel button. The HTML will be rendered before the button text.
+    /// </summary>
+    [Parameter] public string? ConfirmCancelButtonIcon { get; set; }
+
+    /// <summary>
+    /// Optional text to use for a confirmation input for the Ok button to override the default of "Cancel".
+    /// </summary>
+    [Parameter] public string? ConfirmOkButtonText { get; set; }
+
+    /// <summary>
+    /// Optional class to use for the confirmation input class for the Ok button to override the default of "btn btn-success"
+    /// </summary>
+    [Parameter] public string? ConfirmOkButtonClass { get; set; }
+
+    /// <summary>
+    /// Optional icon to show for the confirmation ok button. The HTML will be rendered before the button text.
+    /// </summary>
+    [Parameter] public string? ConfirmOkButtonIcon { get; set; }
+
+    /// <summary>
+    /// An optional default value.
+    /// </summary>
+    [Parameter] public string? DefaultValue { get; set; }
+
+    /// <summary>
+    /// An optional element id. If no value is provided a randomly-generated id will be created.
+    /// </summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>
+    /// Optional introductory text to show before the element.
+    /// </summary>
+    [Parameter] public string? Instructions { get; set; }
+
+    /// <summary>
+    /// When using the Multiselect option the number of rows to show. If set to -1 it will be set to the length of items provided in the UserInputOptions.
+    /// </summary>
+    [Parameter] public int? MultiselectRows { get; set; }
+
+    /// <summary>
+    /// A delegate to receive the value or values when the element is updated. For single value items a single string will be returned. For multiple values a List<string> will be returned.
+    /// </summary>
+    [Parameter] public Delegate? OnInputAccepted { get; set; }
+
+    /// <summary>
+    /// An optional delegate that will be called when the value is updated.
+    /// This delegate will receive no parameter.
+    /// </summary>
+    [Parameter] public Delegate? OnValueChanged { get; set; }
+
+    /// <summary>
+    /// Optional placeholder text to show for elements that support it. For a select option an empty initial option will be shown with this text.
+    /// </summary>
+    [Parameter] public string? PlaceholderText { get; set; }
+
+    /// <summary>
+    /// Option to set the focus on the element, for elements that support receiving the focus.
+    /// </summary>
+    [Parameter] public bool? SetFocus { get; set; }
+
+    /// <summary>
+    /// The required collection of values for input types that require options (Multiselect, Checkbox).
+    /// </summary>
+    [Parameter] public Dictionary<string, string>? UserInputOptions { get; set; }
+
+    /// <summary>
+    /// The input type (defaults to Text).
+    /// </summary>
+    [Parameter] public InputType? UserInputType { get; set; }
+
+    private List<CheckboxItem> _checkboxItems = new List<CheckboxItem>();
+    protected string _class = "";
+    protected bool _confirm = false;
+    protected string _confirmCancelButtonText = "";
+    protected string _confirmCancelButtonClass = "";
+    protected string _confirmCancelButtonIcon = "";
+    protected string _confirmOkButtonText = "";
+    protected string _confirmOkButtonClass = "";
+    protected string _confirmOkButtonIcon = "";
+    protected string _id = "";
+    protected string _instructions = "";
+    protected int _multiSelectRows = 0;
+    protected string _placeholderText = "";
+    protected bool _setFocus = false;
+    protected string _singleValue = "";
+    protected Dictionary<string, string> _userInputOptions = new Dictionary<string, string>();
+    protected InputType _userInputType = InputType.Text;
+    protected List<string> _values = new List<string>();
+
+    private IJSObjectReference? jsModule;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) {
+            jsModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import",
+                "./_content/FreeBlazor/GetInput.Razor.js?v=" + Guid.NewGuid().ToString().Replace("-", ""));
+
+            if (_setFocus) {
+                if(_userInputType != InputType.Radio && _userInputType != InputType.Checkbox) {
+                    await jsModule.InvokeVoidAsync("SetFocus", _id);
+                }
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        _confirmCancelButtonClass = !String.IsNullOrWhiteSpace(ConfirmCancelButtonClass) ? ConfirmCancelButtonClass : "btn btn-dark";
+        _confirmCancelButtonText = !String.IsNullOrWhiteSpace(ConfirmCancelButtonText) ? ConfirmCancelButtonText : "Cancel";
+        _confirmCancelButtonIcon = !String.IsNullOrWhiteSpace(ConfirmCancelButtonIcon) ? ConfirmCancelButtonIcon : "";
+        _confirmOkButtonClass = !String.IsNullOrWhiteSpace(ConfirmOkButtonClass) ? ConfirmOkButtonClass : "btn btn-success";
+        _confirmOkButtonText = !String.IsNullOrWhiteSpace(ConfirmOkButtonText) ? ConfirmOkButtonText : "Ok";
+        _confirmOkButtonIcon = !String.IsNullOrWhiteSpace(ConfirmOkButtonIcon) ? ConfirmOkButtonIcon : "";
+        _id = !String.IsNullOrWhiteSpace(Id) ? Id : Guid.NewGuid().ToString().Replace("-", "").ToLower();
+        _instructions = !String.IsNullOrWhiteSpace(Instructions) ? Instructions : "";
+        _multiSelectRows = MultiselectRows.HasValue ? (int)MultiselectRows : 5;
+        _placeholderText = !String.IsNullOrWhiteSpace(PlaceholderText) ? PlaceholderText : "";
+        _setFocus = SetFocus.HasValue ? (bool)SetFocus : false;
+        _singleValue = !String.IsNullOrWhiteSpace(DefaultValue) ? DefaultValue : "";
+        _userInputOptions = UserInputOptions != null && UserInputOptions.Any() ? UserInputOptions : new Dictionary<string, string>();
+        _userInputType = UserInputType != null && UserInputType.HasValue ? (InputType)UserInputType : InputType.Text;
+
+        string defaultClass = "form-control";
+        switch (_userInputType) {
+            case InputType.Select:
+            case InputType.Multiselect:
+                defaultClass = "form-select";
+                break;
+
+            case InputType.Confirmation:
+                defaultClass = "";
+                break;
+        }
+        _class = !String.IsNullOrWhiteSpace(Class) ? Class : defaultClass;
+
+        if (_multiSelectRows == -1) {
+            _multiSelectRows = _userInputOptions.Count();
+            if(_multiSelectRows < 1) {
+                _multiSelectRows = 5;
+            }
+        }
+
+        if(_userInputType == InputType.Checkbox) {
+            _checkboxItems = new List<CheckboxItem>();
+            int index = -1;
+            foreach(var item in _userInputOptions) {
+                index++;
+                _checkboxItems.Add(new CheckboxItem {
+                    Index = index,
+                    Label = item.Value,
+                    Value = item.Key,
+                    Selected = item.Key == DefaultValue,
+                });
+            }
+        }
+    }
+
+    protected void CheckboxChanged(ChangeEventArgs e, int Index)
+    {
+        string value = "";
+
+        if(e != null && e.Value != null) {
+            value += e.Value.ToString();
+        }
+
+        var item = _checkboxItems.FirstOrDefault(x => x.Index == Index);
+        if(item != null) {
+            item.Selected = value.ToLower() == "true";
+        }
+
+        var values = _checkboxItems.Where(x => x.Selected == true).Select(x => x.Value).ToList();
+        _values = values != null && values.Any() ? values : new List<string>();
+
+        UpdateValue();
+    }
+
+    protected void ConfirmFalse()
+    {
+        _confirm = false;
+        UpdateValue();
+    }
+
+    protected void ConfirmTrue()
+    {
+        _confirm = true;
+        UpdateValue();
+    }
+
+    protected void MultiSelectChanged(ChangeEventArgs e)
+    {
+        string[] values = [];
+
+        if(e != null && e.Value != null) {
+            try {
+                values = (string[])e.Value;
+            } catch { }
+        }
+
+        if(values != null) {
+            _values = values.ToList();
+        } else {
+            _values = new List<string>();
+        }
+
+        UpdateValue();
+    }
+
+    protected void RadioItemChange(ChangeEventArgs e)
+    {
+        string value = String.Empty;
+
+        if(e != null && e.Value != null) {
+            value += e.Value.ToString();
+        }
+
+        _singleValue = value;
+
+        UpdateValue();
+    }
+
+    protected void SingleValueChanged(ChangeEventArgs e)
+    {
+        string value = String.Empty;
+
+        if(e != null && e.Value != null) {
+            value += e.Value.ToString();
+        }
+
+        _singleValue = value;
+
+        UpdateValue();
+    }
+
+    protected void SingleValueKeyUp(KeyboardEventArgs e)
+    {
+        UpdateValue();
+    }
+
+    protected void UpdateValue()
+    {
+        switch (_userInputType) {
+            case InputType.Text:
+            case InputType.Textarea:
+            case InputType.Select:
+            case InputType.Radio:
+                if (OnInputAccepted != null) {
+                    OnInputAccepted.DynamicInvoke(_singleValue);
+                }
+                break;
+
+            case InputType.Multiselect:
+                if (OnInputAccepted != null) {
+                    OnInputAccepted.DynamicInvoke(_values);
+                }
+                break;
+
+            case InputType.Checkbox:
+                if (OnInputAccepted != null) {
+                    OnInputAccepted.DynamicInvoke(_values);
+                }
+                break;
+
+            case InputType.Confirmation:
+                if(OnInputAccepted != null) {
+                    OnInputAccepted.DynamicInvoke(_confirm);
+                }
+                break;
+        }
+
+        if (OnValueChanged != null) {
+            OnValueChanged.DynamicInvoke();
+        }
+    }
+}

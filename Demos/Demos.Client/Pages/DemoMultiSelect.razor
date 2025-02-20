@@ -1,0 +1,100 @@
+﻿@page "/MultiSelect"
+
+<h1>MultiSelect</h1>
+
+<div class="alert alert-warning">
+    While this component is still part of this solution for backwards-compatibility, it is no longer being updated.
+    When I first started using Blazor I could not figure out how to do native binding with a multiselect browser control.
+    However, I have since found out how to do this by binding to an array value, whereas I was trying to use a List&lt;string&gt; value.
+</div>
+
+<div class="mb-2">
+    <button type="button" class="btn btn-primary" @onclick="ToggleAll">
+        Toggle Selections
+    </button>
+
+    <button type="button" class="btn btn-primary" @onclick="ClearSelections">
+        Clear Selections
+    </button>
+</div>
+
+<label for="test-select-list">A Test Select List</label>
+
+<MultiSelect
+    Class="form-select"
+    Id="test-select-list"
+    Options="_options"
+    OnUpdate="SelectionsChanged"
+    OnValueChanged="StateHasChanged"
+/>
+
+<div class="mt-4">
+    @((MarkupString)_results)
+</div>
+
+@code {
+    protected string _results = "";
+    protected List<(string value, string label, bool selected)> _options = new List<(string value, string label, bool selected)> {
+        ("item1value", "Item 1 Display", false),
+        ("item2value", "Item 2 Display", false),
+        ("item3value", "Item 3 Display", false),
+        ("item4value", "Item 4 Display", false),
+        ("item5value", "Item 5 Display", false),
+        ("item6value", "Item 6 Display", false),
+        ("item7value", "Item 7 Display", false),
+        ("item8value", "Item 8 Display", false),
+    };
+
+    protected void ClearSelections()
+    {
+        var updated = new List<(string value, string label, bool selected)>();
+
+        foreach (var item in _options) {
+            updated.Add((item.value, item.label, false));
+        }
+
+        _options = updated;
+
+        StateHasChanged();
+    }
+
+    protected void SelectionsChanged(List<string>? selected)
+    {
+        var updated = new List<(string value, string label, bool selected)>();
+
+        string results = String.Empty;
+
+        foreach(var item in _options) {
+            bool isSelected = selected != null && selected.Contains(item.value);
+
+            updated.Add((item.value, item.label, isSelected));
+
+            if (isSelected) {
+                results += "<li>" + item.label + "</li>";
+            }
+        }
+
+        if (!String.IsNullOrEmpty(results)) {
+            _results = "<p>Results:</p><ul>" + results + "</ul>";
+        } else {
+            _results = "No Items Selected";
+        }
+
+        //StateHasChanged();
+
+        _options = updated;
+    }
+
+    protected void ToggleAll()
+    {
+        var updated = new List<(string value, string label, bool selected)>();
+
+        foreach (var item in _options) {
+            updated.Add((item.value, item.label, !item.selected));
+        }
+
+        _options = updated;
+
+        //StateHasChanged();
+    }
+}

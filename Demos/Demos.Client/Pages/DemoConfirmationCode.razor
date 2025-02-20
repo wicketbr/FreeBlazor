@@ -1,0 +1,48 @@
+﻿@page "/ConfirmationCode"
+
+<h1>Confirmation Code</h1>
+
+<div class="mb-2">
+    <label for="cc-size">Size (@_size)</label>
+    <input type="range" class="form-range" id="cc-size" min="4" max="12" step="1" @bind="_size" @bind:after="SizeChanged" />
+</div>
+
+<div class="mb-2">
+    <label for="cc-text-size">Text Size (@_textSize)</label>
+    <input type="range" class="form-range" id="cc-text-size" min="20" max="100" step="1" @bind="_textSize" />
+</div>
+
+<div class="mb-2">
+    <label for="confirmation-code-demo">Enter the confirmation code below:</label>
+</div>
+
+<div class="mb-2">
+    <ConfirmationCode
+            Id="confirmation-code-demo"
+            InputClass="confirmation-code-text"
+            Length="@_size"
+            TextSize="@_textSize"
+            @bind-Value="_results" />
+</div>
+
+<div class="mt-2">
+    Results: @((MarkupString)_results)
+</div>
+
+@code {
+    protected string _results = "";
+    protected int _size = 6;
+    protected int _textSize = 60;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (firstRender) {
+            await Helpers.DelayedFocus("confirmation-code-demo");
+        }
+    }
+
+    protected void SizeChanged()
+    {
+        _results = "";
+        StateHasChanged();
+    }
+}

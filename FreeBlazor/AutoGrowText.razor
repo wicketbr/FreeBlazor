@@ -1,0 +1,126 @@
+@inject IJSRuntime jsRuntime
+<textarea class="@Class" id="@ElementId" @bind="_value" @bind:event="oninput" @bind:after="ValueHasChanged" placeholder="@Placeholder" rows="1"></textarea>
+@code {
+    /// <summary>
+    /// An optional class to add to the textarea element.
+    /// </summary>
+    [Parameter] public string Class { get; set; } = "";
+
+    /// <summary>
+    /// An optional id for the textarea element. If not provided a unique id will be generated.
+    /// </summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>
+    /// An optional minimum height for the textarea element. Specify any valid CSS height value.
+    /// </summary>
+    [Parameter] public string? MinimumHeight { get; set;}
+
+    /// <summary>
+    /// An optional delegate that will be called when the value is updated.
+    /// This delegate will receive no parameter.
+    /// </summary>
+    [Parameter] public Delegate? OnValueChanged { get; set; }
+
+    /// <summary>
+    /// Optional placeholder text.
+    /// </summary>
+    [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// Determines the time in milliseconds to wait after the last key press before updating the value. Defaults to 300 milliseconds.
+    /// </summary>
+    [Parameter] public int UpdateAfterMilliseconds { get; set; } = 300;
+
+    /// <summary>
+    /// The optional initial value for the textarea element.
+    /// </summary>
+    [Parameter] public string Value { get; set; } = "";
+
+    /// <summary>
+    /// By convention, this allows the @bind-Value option for two-way binding.
+    /// </summary>
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    protected System.Timers.Timer _autoGrowTimer = new System.Timers.Timer();
+    protected string _id = Guid.NewGuid().ToString().Replace("-", "");
+    protected IJSObjectReference? jsModule;
+    protected string _lastId = "";
+    protected string _lastMinHeight = "";
+    protected string _lastValue = "";
+    protected string _value = "";
+
+    protected override void OnInitialized()
+    {
+        _autoGrowTimer = new System.Timers.Timer();
+        _autoGrowTimer.Interval = UpdateAfterMilliseconds < 1 ? 300 : UpdateAfterMilliseconds;
+        _autoGrowTimer.Elapsed += UpdateTimer;
+        _autoGrowTimer.AutoReset = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) {
+            _lastId = ElementId;
+            _lastMinHeight = !String.IsNullOrWhiteSpace(MinimumHeight) ? MinimumHeight : "";
+            _lastValue = !String.IsNullOrWhiteSpace(Value) ? Value : "";
+            _value = !String.IsNullOrWhiteSpace(Value) ? Value : "";
+
+            jsModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import",
+                "./_content/FreeBlazor/AutoGrowText.Razor.js?v=" + Guid.NewGuid().ToString().Replace("-", ""));
+
+            await jsModule.InvokeVoidAsync("Init", ElementId, MinimumHeight);
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ElementId != _lastId) {
+            _lastId = ElementId;
+            if(jsModule != null) {
+                await jsModule.InvokeVoidAsync("UpdateElementId", ElementId);
+            }
+        }
+
+        if (MinimumHeight != _lastMinHeight) {
+            _lastMinHeight = !String.IsNullOrWhiteSpace(MinimumHeight) ? MinimumHeight : "";
+            if (jsModule != null) {
+                await jsModule.InvokeVoidAsync("UpdateMinHeight", MinimumHeight);
+            }
+        }
+
+        if( Value != _lastValue) {
+            _value = Value;
+            _lastValue = Value;
+
+            if(jsModule != null) {
+                await jsModule.InvokeVoidAsync("ResizeElementFromCode");
+            }
+        }
+    }
+
+    protected string ElementId {
+        get {
+            return !String.IsNullOrWhiteSpace(Id) ? Id : _id;
+        }
+    }
+
+    protected void UpdateTimer(Object? source, System.Timers.ElapsedEventArgs e)
+    {
+        ValueChanged.InvokeAsync(_value);
+
+        if (OnValueChanged != null) {
+            OnValueChanged.DynamicInvoke();
+        }
+    }
+
+    protected async Task ValueHasChanged()
+    {
+        _autoGrowTimer.Stop();
+        _autoGrowTimer.Start();
+
+        if (jsModule != null) {
+            await jsModule.InvokeVoidAsync("ResizeElementFromCode");
+        }
+    }
+}

@@ -1,0 +1,201 @@
+﻿@page "/GetInput"
+
+<h3>Get Input</h3>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <label for="get-input-text">Single Text Line</label>
+    </div>
+    <div class="card-body">
+        <GetInput 
+            Id="get-input-text"
+            UserInputType="GetInput.InputType.Text"
+            PlaceholderText="Enter a Single Line of Text"
+            Class="form-control"
+            DefaultValue="Sample Value"
+            OnInputAccepted="@((string v) => _text = v)"
+            OnValueChanged="StateHasChanged"
+            SetFocus="true"
+        />
+
+        @if (!String.IsNullOrWhiteSpace(_text)) {
+            <div class="mt-2">
+                <div>Result:</div>
+                <div>@((MarkupString)_text)</div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <label for="get-input-textarea">Textarea</label>
+    </div>
+    <div class="card-body">
+        <GetInput 
+            Id="get-input-textarea"
+            UserInputType="GetInput.InputType.Textarea"
+            PlaceholderText="Enter something here..."
+            Class="form-control"
+            OnInputAccepted="@((string v) => _textarea = v)"
+            OnValueChanged="StateHasChanged"
+        />
+
+        @if (!String.IsNullOrWhiteSpace(_textarea)) {
+            <div class="mt-2">
+                <div>Result:</div>
+                <div>@((MarkupString)_textarea)</div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <label for="get-input-select">Select</label>
+    </div>
+    <div class="card-body">
+        <GetInput 
+            Id="get-input-select"
+            UserInputType="GetInput.InputType.Select"
+            PlaceholderText="Select an Option"
+            Class="form-select"
+            UserInputOptions="_selectOptions"
+            OnInputAccepted="@((string v) => _selectValue = v)"
+            OnValueChanged="StateHasChanged"
+        />
+
+        @if (!String.IsNullOrWhiteSpace(_selectValue)) {
+            <div class="mt-2">
+                <div>Result:</div>
+                <div>@((MarkupString)_selectValue)</div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <label for="get-input-multiselect">Multi-Select</label>
+    </div>
+    <div class="card-body">
+        <GetInput 
+            Id="get-input-multiselect"
+            UserInputType="GetInput.InputType.Multiselect"
+            MultiselectRows="-1"
+            Class="form-select"
+            UserInputOptions="_selectOptions"
+            OnInputAccepted="@((List<string> v) => _multiSelectValues = v)"
+            OnValueChanged="StateHasChanged"
+        />
+
+        @if (_multiSelectValues.Any()) {
+            <div class="mt-2">
+                <div>Result:</div>
+                <ul>
+                    @foreach(var item in _multiSelectValues) {
+                        <li>@item</li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <label for="get-input-radio">Radio</label>
+    </div>
+    <div class="card-body">
+        <GetInput 
+            Id="get-input-radio"
+            UserInputType="GetInput.InputType.Radio"
+            UserInputOptions="_selectOptions"
+            OnInputAccepted="@((string v) => _radioValue = v)"
+            OnValueChanged="StateHasChanged"
+        />
+
+        @if (!String.IsNullOrWhiteSpace(_radioValue)) {
+            <div class="mt-2">
+                <div>Result:</div>
+                <div>@((MarkupString)_radioValue)</div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <label for="get-input-checkbox">Checkbox</label>
+    </div>
+    <div class="card-body">
+        <GetInput 
+            Id="get-input-checkbox"
+            UserInputType="GetInput.InputType.Checkbox"
+            UserInputOptions="_selectOptions"
+            OnInputAccepted="@((List<string> v) => _checkboxValues = v)"
+            OnValueChanged="StateHasChanged"
+        />
+
+        @if (_checkboxValues.Any()) {
+            <div class="mt-2">
+                <div>Result:</div>
+                <ul>
+                    @foreach (var item in _checkboxValues) {
+                        <li>@item</li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        Confirmation
+    </div>
+    <div class="card-body">
+        <GetInput 
+            Id="get-input-confirmation"
+            Class="btn-group btn-group-sm"
+            UserInputType="GetInput.InputType.Confirmation"
+            OnInputAccepted="GotConfirmationValue"
+            OnValueChanged="StateHasChanged"
+            Instructions="Please confirm something..."
+        />
+        @if (!String.IsNullOrWhiteSpace(_confirmationValue)) {
+            <div class="mt-2">
+                @((MarkupString)_confirmationValue)
+            </div>
+        }
+    </div>
+</div>
+@code {
+    protected List<string> _checkboxValues = new List<string>();
+    protected string _confirmationValue = "";
+    protected List<string> _multiSelectValues = new List<string>();
+    protected string _radioValue = "";
+    protected string _selectValue = "";
+    protected string _text = "";
+    protected string _textarea = "";
+
+    protected Dictionary<string, string> _selectOptions = new Dictionary<string, string> {
+        { "Item1", "Item 1" },
+        { "Item2", "Item 2" },
+        { "Item3", "Item 3" },
+        { "Item4", "Item 4" },
+        { "Item5", "Item 5" },
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) {
+
+        }
+    }
+
+    public void GotConfirmationValue(bool value)
+    {
+        _confirmationValue = value ? "Confirmed" : "Canceled";
+    }
+}
