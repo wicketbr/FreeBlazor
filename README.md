@@ -209,4 +209,4 @@ A control for showing a password with icons to show/hide the password and option
 
 Contact Brad Wickett at [brad@wickett.net](mailto:brad@wickett.net) for assistance.
 
-You can also download the source code for this project from my Azure DevOps site at [https://wickett.visualstudio.com/FreeBlazor](https://wickett.visualstudio.com/FreeBlazor). The source code includes a demo Blazor app that shows how to use each component, along with some more advanced demos of using components inside of a dialog.
+You can also download the source code for this project from my GitHub site at [https://github.com/wicketbr/FreeBlazor/](https://github.com/wicketbr/FreeBlazor/). The source code includes a demo Blazor app that shows how to use each component, along with some more advanced demos of using components inside of a dialog.
