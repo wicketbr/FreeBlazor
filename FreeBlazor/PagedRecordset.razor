@@ -580,7 +580,7 @@
     {
         string output = String.Empty;
 
-        if (!String.IsNullOrWhiteSpace(value)) {
+        //if (!String.IsNullOrWhiteSpace(value)) {
             // See if there are any custom formatters
             bool formatted = false;
 
@@ -600,6 +600,8 @@
                             formattedValue = formatter.CallbackHandler.DynamicInvoke(value, recordIndex);
                         } else if (type == typeof(Func<string, object, string>)) {
                             formattedValue = formatter.CallbackHandler.DynamicInvoke(value, record);
+                        } else if (type == typeof(Func<string, string, object, string>)) {
+                            formattedValue = formatter.CallbackHandler.DynamicInvoke(value, column.DataElementName, record);
                         } else if (type == typeof(Func<object, string>)) {
                             formattedValue = formatter.CallbackHandler.DynamicInvoke(record);
                         }
@@ -635,7 +637,7 @@
 
                     if (!formatted) {
                         // Unable to format as currency, so just include the value as the output
-                        output = value;
+                        output = StringValue(value);
                         formatted = true;
                     }
                 } else {
@@ -644,13 +646,13 @@
                             try {
                                 output = Convert.ToDateTime(value).ToString();
                             } catch {
-                                output = value;
+                                output = StringValue(value);
                             }
                             break;
 
                         case "bool":
                         case "boolean":
-                            if (value == "{{boolean:true}}" || value.ToLower() == "true") {
+                            if (value == "{{boolean:true}}" || StringValue(value).ToLower() == "true") {
                                 if (!String.IsNullOrWhiteSpace(column.BooleanIcon)) {
                                     output = column.BooleanIcon;
                                 } else if (!String.IsNullOrWhiteSpace(BooleanIcon)) {
@@ -665,23 +667,23 @@
 
                         case "guid":
                             try {
-                                Guid g = new Guid(value);
+                                Guid g = new Guid(StringValue(value));
                                 if (g != Guid.Empty) {
                                     output = g.ToString();
                                 }
                             } catch {
-                                output = value;
+                                output = StringValue(value);
                             }
                             break;
 
                         default:
                             // string, etc.
-                            output = value;
+                            output = StringValue(value);
                             break;
                     }
                 }
             }
-        }
+        //}
 
 
         return output;
