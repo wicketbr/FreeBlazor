@@ -18,7 +18,7 @@
         </button>
     </div>
 } else {
-    <button type="button" class="@_deleteButtonClass @_buttonSize" @onclick="DeleteClicked">
+    <button type="button" class="@_deleteButtonClass @_buttonSize" @onclick="DeleteClicked" disabled="@Disabled">
         @if (!String.IsNullOrWhiteSpace(_deleteIcon)) {
             @((MarkupString)_deleteIcon)
         }
@@ -49,6 +49,11 @@
     /// The EventCallback for when the Confirm Delete button is clicked.
     /// </summary>
     [Parameter] public EventCallback OnConfirmed { get; set; }
+
+    /// <summary>
+    /// An option to disable the delete button.
+    /// </summary>
+    [Parameter] public bool Disabled { get; set; }
 
     /// <summary>
     /// An option to override the default delete icon with your own value. Use "none" or "n/a" to hide the icon.
