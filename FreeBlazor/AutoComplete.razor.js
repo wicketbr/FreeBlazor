@@ -12,6 +12,10 @@ export function ClosePopup(el) {
     var elem = document.getElementById(el);
     if (elem != null && elem.style != null) {
         elem.style.display = "none";
+
+        document.removeEventListener('mousedown', clickWatchers[el]);
+        window.removeEventListener('resize', clickWatchers[el]);
+        window.removeEventListener('scroll', clickWatchers[el]);
     }
 }
 
