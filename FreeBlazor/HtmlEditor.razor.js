@@ -220,6 +220,8 @@ export function HtmlEditorSetupEditor(element, config, html) {
             //DotNet.invokeMethod("CRM.Client", "ModeChanged", this.mode);
             htmlEditorDotNetHelper.invokeMethod("ModeHasChanged", this.mode);
         });
+
+        htmlEditorDotNetHelper.invokeMethod("EditorLoaded");
     }
 }
 

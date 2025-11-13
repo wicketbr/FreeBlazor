@@ -27,7 +27,7 @@
     /// <summary>
     /// Optional delegate to be notified when the mode changes between the "source" and "wysiwyg" options.
     /// Since the editor does not update the HTML value when in Source view until you switch back you may
-    /// want to use this so you can block your save method until the editor is back in the WYWIWYG mode.
+    /// want to use this so you can block your save method until the editor is back in the WYSIWYG mode.
     /// The GetHTML method still works in the source mode, so you would only need to use this if you are
     /// not directly getting the value from the editor.
     /// </summary>
@@ -51,74 +51,34 @@
     public string? Value { get; set; }
 
     protected HtmlEditorConfiguration _config = new HtmlEditorConfiguration();
+    protected string _defaultFontSizeList = String.Empty;
     protected bool _editorInstalled = true;
     protected bool _editorLoading = false;
     protected string _id = Guid.NewGuid().ToString().Replace("-", "");
     protected IJSObjectReference? jsModule;
+    protected bool _loaded = false;
     protected string _mode = "editor";
     protected string _value = String.Empty;
 
     protected DotNetObjectReference<HtmlEditor>? dotNetHelper;
 
-    public void Dispose()
-    {
+    public void Dispose() {
         dotNetHelper?.Dispose();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
         if (firstRender) {
             HtmlEditorConfiguration c = Config != null ? Config : new HtmlEditorConfiguration();
 
             List<string> defaultFontSizes = new List<string> { "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72" };
-            string defaultFontSizeList = String.Empty;
-            foreach(var item in defaultFontSizes) {
-                defaultFontSizeList += item + "/" + item + "px;";
+            _defaultFontSizeList = String.Empty;
+            foreach (var item in defaultFontSizes) {
+                _defaultFontSizeList += item + "/" + item + "px;";
             }
 
             _value = !String.IsNullOrWhiteSpace(Value) ? Value : "";
 
-            _config = new HtmlEditorConfiguration {
-                SimpleView = DefaultBooleanValue(c.SimpleView, false),
-                HideSourceButton = DefaultBooleanValue(c.HideSourceButton, false),
-                Required = DefaultBooleanValue(c.Required, false),
-                PlaceholderText = c.PlaceholderText,
-                AllowFeatureBold = DefaultBooleanValue(c.AllowFeatureBold, true),
-                AllowFeatureItalic = DefaultBooleanValue(c.AllowFeatureItalic, true),
-                AllowFeatureUnderline = DefaultBooleanValue(c.AllowFeatureUnderline, true),
-                AllowFeatureStrikeThrough = DefaultBooleanValue(c.AllowFeatureStrikeThrough, true),
-                AllowFeatureSubscript = DefaultBooleanValue(c.AllowFeatureSubscript, true),
-                AllowFeatureSuperscript = DefaultBooleanValue(c.AllowFeatureSuperscript, true),
-                AllowFeatureStyleSelector = DefaultBooleanValue(c.AllowFeatureStyleSelector, true),
-                AllowFeatureFontSelector = DefaultBooleanValue(c.AllowFeatureFontSelector, true),
-                AllowFeatureFonts = !String.IsNullOrWhiteSpace(c.AllowFeatureFonts) 
-                    ? c.AllowFeatureFonts 
-                    :   "Arial/Arial, Helvetica, sans-serif;" +
-                        "Brush Script MT/Brush Script MT, cursive;" +
-                        "Courier New/Courier New, monospace;" +
-                        "Garamond/Garamond, serif;" +
-                        "Georgia/Georgia, serif;" +
-                        "Helvetica/Helvetica, sans-serfi;" +
-                        "Tahoma/Tahoma/, sans-serif;" +
-                        "Times New Roman/Times New Roman, Times, serif;" +
-                        "Trebuchet MS/Trebuchet MS, sans-serif;" +
-                        "Verdana/Verdana, sans-serif;",
-                AllowFeatureFontSizeSelector = DefaultBooleanValue(c.AllowFeatureFontSizeSelector, true),
-                AllowFeatureFontSizes = !String.IsNullOrWhiteSpace(c.AllowFeatureFontSizes)
-                    ? c.AllowFeatureFontSizes
-                    : defaultFontSizeList,
-                AllowFeatureFontColorSelector = DefaultBooleanValue(c.AllowFeatureFontColorSelector, true),
-                AllowFeatureFontColors = !String.IsNullOrWhiteSpace(c.AllowFeatureFontColors)
-                     ? c.AllowFeatureFontColors
-                    :   "000,800000,8B4513,2F4F4F,008080,000080,4B0082,696969," +
-                        "B22222,A52A2A,DAA520,006400,40E0D0,0000CD,800080,808080," +
-                        "F00,FF8C00,FFD700,008000,0FF,00F,EE82EE,A9A9A9," +
-                        "FFA07A,FFA500,FFFF00,00FF00,AFEEEE,ADD8E6,DDA0DD,D3D3D3," +
-                        "FFF0F5,FAEBD7,FFFFE0,F0FFF0,F0FFFF,F0F8FF,E6E6FA,FFF",
-                AllowFeatureBackgroundColorSelector = DefaultBooleanValue(c.AllowFeatureBackgroundColorSelector, true),
-                AllowFeatureFormFields = DefaultBooleanValue(c.AllowFeatureFormFields, true),
-                AllowFeatureTables = DefaultBooleanValue(c.AllowFeatureTables, true),
-            };
+            SetConfig(c);
 
             dotNetHelper = DotNetObjectReference.Create(this);
 
@@ -133,7 +93,7 @@
                 await jsModule.InvokeVoidAsync("HtmlEditorLoad");
 
                 // It can take a few seconds for the ckeditor.js script to load, so try a few checks.
-                for(int x = 0; x < 50; x++) {
+                for (int x = 0; x < 50; x++) {
                     _editorInstalled = await jsModule.InvokeAsync<bool>("HtmlEditorInstalled");
                     if (_editorInstalled) {
                         break;
@@ -161,13 +121,11 @@
         }
     }
 
-    protected override void OnInitialized()
-    {
+    protected override void OnInitialized() {
         //RenderUploadForm();
     }
 
-    protected bool DefaultBooleanValue(bool? ConfigValue, bool Default)
-    {
+    protected bool DefaultBooleanValue(bool? ConfigValue, bool Default) {
         return ConfigValue.HasValue ? (bool)ConfigValue : Default;
     }
 
@@ -175,8 +133,7 @@
     /// Returns the current HTML from the editor.
     /// </summary>
     /// <returns>An awaitable string containing the HTML.</returns>
-    public async Task<string> GetHTML()
-    {
+    public async Task<string> GetHTML() {
         // string output = String.Empty;
 
         // if (_editorInstalled && jsModule != null) {
@@ -193,11 +150,16 @@
     /// <param name="value">The text to insert.</param>
     /// <param name="asHtml">Indicates if this is plain text or HTML. Defaults to true.</param>
     /// <returns>An awaitable Task.</returns>
-    public async Task InsertText(string value, bool asHtml = true)
-    {
+    public async Task InsertText(string value, bool asHtml = true) {
         if (_editorInstalled && jsModule != null) {
             await jsModule.InvokeVoidAsync("HtmlEditorInsertText", _id, value, asHtml);
         }
+    }
+
+    [JSInvokable]
+    public void EditorLoaded() {
+        _loaded = true;
+        StateHasChanged();
     }
 
     /// <summary>
@@ -205,9 +167,8 @@
     /// </summary>
     /// <param name="mode"></param>
     [JSInvokable]
-    public void ModeHasChanged(string mode)
-    {
-        if(mode != _mode) {
+    public void ModeHasChanged(string mode) {
+        if (mode != _mode) {
             _mode = mode;
 
             if (OnModeChanged != null) {
@@ -218,13 +179,56 @@
         }
     }
 
+    protected void SetConfig(HtmlEditorConfiguration config) {
+        _config = new HtmlEditorConfiguration {
+            SimpleView = DefaultBooleanValue(config.SimpleView, false),
+            HideSourceButton = DefaultBooleanValue(config.HideSourceButton, false),
+            Required = DefaultBooleanValue(config.Required, false),
+            PlaceholderText = config.PlaceholderText,
+            AllowFeatureBold = DefaultBooleanValue(config.AllowFeatureBold, true),
+            AllowFeatureItalic = DefaultBooleanValue(config.AllowFeatureItalic, true),
+            AllowFeatureUnderline = DefaultBooleanValue(config.AllowFeatureUnderline, true),
+            AllowFeatureStrikeThrough = DefaultBooleanValue(config.AllowFeatureStrikeThrough, true),
+            AllowFeatureSubscript = DefaultBooleanValue(config.AllowFeatureSubscript, true),
+            AllowFeatureSuperscript = DefaultBooleanValue(config.AllowFeatureSuperscript, true),
+            AllowFeatureStyleSelector = DefaultBooleanValue(config.AllowFeatureStyleSelector, true),
+            AllowFeatureFontSelector = DefaultBooleanValue(config.AllowFeatureFontSelector, true),
+            AllowFeatureFonts = !String.IsNullOrWhiteSpace(config.AllowFeatureFonts)
+                ? config.AllowFeatureFonts
+                : "Arial/Arial, Helvetica, sans-serif;" +
+                    "Brush Script MT/Brush Script MT, cursive;" +
+                    "Courier New/Courier New, monospace;" +
+                    "Garamond/Garamond, serif;" +
+                    "Georgia/Georgia, serif;" +
+                    "Helvetica/Helvetica, sans-serfi;" +
+                    "Tahoma/Tahoma/, sans-serif;" +
+                    "Times New Roman/Times New Roman, Times, serif;" +
+                    "Trebuchet MS/Trebuchet MS, sans-serif;" +
+                    "Verdana/Verdana, sans-serif;",
+            AllowFeatureFontSizeSelector = DefaultBooleanValue(config.AllowFeatureFontSizeSelector, true),
+            AllowFeatureFontSizes = !String.IsNullOrWhiteSpace(config.AllowFeatureFontSizes)
+                ? config.AllowFeatureFontSizes
+                : _defaultFontSizeList,
+            AllowFeatureFontColorSelector = DefaultBooleanValue(config.AllowFeatureFontColorSelector, true),
+            AllowFeatureFontColors = !String.IsNullOrWhiteSpace(config.AllowFeatureFontColors)
+                 ? config.AllowFeatureFontColors
+                : "000,800000,8B4513,2F4F4F,008080,000080,4B0082,696969," +
+                    "B22222,A52A2A,DAA520,006400,40E0D0,0000CD,800080,808080," +
+                    "F00,FF8C00,FFD700,008000,0FF,00F,EE82EE,A9A9A9," +
+                    "FFA07A,FFA500,FFFF00,00FF00,AFEEEE,ADD8E6,DDA0DD,D3D3D3," +
+                    "FFF0F5,FAEBD7,FFFFE0,F0FFF0,F0FFFF,F0F8FF,E6E6FA,FFF",
+            AllowFeatureBackgroundColorSelector = DefaultBooleanValue(config.AllowFeatureBackgroundColorSelector, true),
+            AllowFeatureFormFields = DefaultBooleanValue(config.AllowFeatureFormFields, true),
+            AllowFeatureTables = DefaultBooleanValue(config.AllowFeatureTables, true),
+        };
+    }
+
     /// <summary>
     /// Sets the focus to the HTML editor.
     /// </summary>
     /// <returns>An awaitable Task.</returns>
-    public async Task SetFocus()
-    {
-        if(_editorInstalled && jsModule != null) {
+    public async Task SetFocus() {
+        if (_editorInstalled && jsModule != null) {
             await jsModule.InvokeVoidAsync("HtmlEditorFocus", _id);
         }
     }
@@ -234,8 +238,7 @@
     /// </summary>
     /// <param name="value">The HTML.</param>
     /// <returns>An awaitable Task.</returns>
-    public async Task SetHTML(string? value)
-    {
+    public async Task SetHTML(string? value) {
         if (String.IsNullOrWhiteSpace(value)) {
             value = String.Empty;
         }
@@ -245,9 +248,17 @@
         }
     }
 
-    [JSInvokable]
-    public void ValueChanged(string? value)
+    public async Task UpdateConfig(HtmlEditorConfiguration config)
     {
+        SetConfig(config);
+
+        if (jsModule != null) {
+            await jsModule.InvokeVoidAsync("HtmlEditorSetupEditor", _id, _config, _value);
+        }
+    }
+
+    [JSInvokable]
+    public void ValueChanged(string? value) {
         _value = !String.IsNullOrWhiteSpace(value) ? value : "";
 
         if (OnUpdate != null) {
@@ -265,9 +276,9 @@
     public class HtmlEditorConfiguration
     {
         /// <summary>
-        /// The Simple View includes a limited set of formatting tools. 
-        /// When enabled the other options for showing and hiding elements are ignored and 
-        /// only the following options are shown: 
+        /// The Simple View includes a limited set of formatting tools.
+        /// When enabled the other options for showing and hiding elements are ignored and
+        /// only the following options are shown:
         /// Bold, Italic, Underline, Decrease Indent, Increase Indent,
         /// Align Left, Center, Align Right, Justify, Text Color, Background Color, and Show Blocks.
         /// </summary>
