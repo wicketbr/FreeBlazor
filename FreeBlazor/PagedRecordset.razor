@@ -70,7 +70,7 @@
                 <tr>
                     <td class="paged-recordset-left">
                         <span>@showingLabel</span>
-                        <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected">
+                        <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected" aria-label="@AriaLabelRecordsPerPage">
                             @foreach (var rpp in _recordsPerPageOptions) {
                                 if (rpp == recordsPerPage) {
                                     <option value="@rpp" SELECTED>@rpp</option>
@@ -132,14 +132,18 @@
             <tr class="@_tableHeaderRowClass">
                 @if (_showActionButtons > 0) {
                     foreach (var a in _actionHandlers.Where(x => !String.IsNullOrWhiteSpace(x.ActionElement))) {
-                        <th class="@a.ColumnClass" style="width:1%;">@a.ColumnTitle</th>
+                        if (!String.IsNullOrWhiteSpace(a.ColumnTitle)) {
+                            <th class="@a.ColumnClass" style="width:1%;">@a.ColumnTitle</th>
+                        } else {
+                            <td class="@a.ColumnClass" style="width:1%;"></td>
+                        }
                     }
                 }
 
                 @if (_includeCheckboxes) {
-                    <th class="action-item" style="width:1%;">
-                        <input type="checkbox" class="form-check-input" @onchange="ToggleAllCheckboxes" />
-                    </th>
+                    <td class="action-item" style="width:1%;">
+                        <input type="checkbox" class="form-check-input" @onchange="ToggleAllCheckboxes" aria-label="@CheckboxToggleAllAriaLabel" />
+                    </td>
                 }
 
                 @if (_recordset.Columns != null && _recordset.Columns.Any()) {
@@ -271,9 +275,9 @@
 
                             <td>
                                 @if (_checkedItems[thisIndex]) {
-                                    <input type="checkbox" class="form-check-input" @onchange="@((ChangeEventArgs e) => ToggleCheckbox(e, thisIndex))" checked />
+                                    <input type="checkbox" class="form-check-input" @onchange="@((ChangeEventArgs e) => ToggleCheckbox(e, thisIndex))" checked aria-label="@CheckboxAriaLabel" />
                                 } else {
-                                    <input type="checkbox" class="form-check-input" @onchange="@((ChangeEventArgs e) => ToggleCheckbox(e, thisIndex))" />
+                                    <input type="checkbox" class="form-check-input" @onchange="@((ChangeEventArgs e) => ToggleCheckbox(e, thisIndex))" aria-label="@CheckboxAriaLabel" />
                                 }
                             </td>
                         }
@@ -335,7 +339,7 @@
                 <tr>
                     <td class="paged-recordset-left">
                         <span>@showingLabel</span>
-                        <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected">
+                        <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected" aria-label="@AriaLabelRecordsPerPage">
                             @foreach (var rpp in _recordsPerPageOptions) {
                                 if (rpp == recordsPerPage) {
                                     <option value="@rpp" SELECTED>@rpp</option>
@@ -425,6 +429,12 @@
     public IEnumerable<ActionHandler>? ActionHandlers { get; set; }
 
     /// <summary>
+    /// Optional aria label for the records per page select input
+    /// </summary>
+    [Parameter]
+    public string AriaLabelRecordsPerPage { get; set; } = "Records Per Page";
+
+    /// <summary>
     /// OPTIONAL: An optional icon to use for boolean items. If not specified then "true" will be shown for true boolean items.
     /// </summary>
     [Parameter]
@@ -442,6 +452,18 @@
     /// </summary>
     [Parameter]
     public Config? Configuration { get; set; }
+
+    /// <summary>
+    /// Optional aria label for the checkbox items.
+    /// </summary>
+    [Parameter]
+    public string CheckboxAriaLabel { get; set; } = "Select Record";
+
+    /// <summary>
+    /// Optional aria label for the header checkbox to toggle all checkboxes.
+    /// </summary>
+    [Parameter]
+    public string CheckboxToggleAllAriaLabel { get; set; } = "Toggle All Checkboxes";
 
     /// <summary>
     /// OPTIONAL: A callback handler that will receive an array of numbers representing the indexes of the record rows that are checked.

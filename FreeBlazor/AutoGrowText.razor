@@ -1,6 +1,11 @@
 @inject IJSRuntime jsRuntime
-<textarea class="@Class" id="@ElementId" @bind="_value" @bind:event="oninput" @bind:after="ValueHasChanged" placeholder="@Placeholder" rows="1"></textarea>
+<textarea class="@Class" id="@ElementId" @bind="_value" @bind:event="oninput" @bind:after="ValueHasChanged" placeholder="@Placeholder" rows="1" aria-label="@AriaLabel"></textarea>
 @code {
+    /// <summary>
+    /// Optional aria-label text
+    /// </summary>
+    [Parameter] public string AriaLabel { get; set; } = "AutoGrow Input";
+
     /// <summary>
     /// An optional class to add to the textarea element.
     /// </summary>

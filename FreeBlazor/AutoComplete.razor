@@ -1,5 +1,5 @@
 ﻿@inject IJSRuntime jsRuntime
-<input type="text" class="@_class" placeholder="@_placeholderText" disabled="@Disabled"
+<input type="text" class="@_class" placeholder="@_placeholderText" disabled="@Disabled" aria-label="@AriaLabel"
        aria-autocomplete="list" aria-haspopup="true" autocomplete="off" role="combobox"
        id="@_id" style="@_errorStyle" @onkeydown="@OnKeyPress" tabindex="@(Disabled ? "-1" : TabIndex.ToString())" />
 @if (_results != null) {
@@ -30,65 +30,59 @@
     private IJSObjectReference? jsModule;
 
     /// <summary>
+    /// Optional aria-label text
+    /// </summary>
+    [Parameter] public string AriaLabel { get; set; } = "AutoComplete Input";
+
+    /// <summary>
     /// An optional class to add to the input element
     /// </summary>
-    [Parameter]
-    public string Class { get; set; } = "";
+    [Parameter] public string Class { get; set; } = "";
 
     /// <summary>
     /// Option to disable the input.
     /// </summary>
-    [Parameter]
-    public bool Disabled { get; set; } = false;
+    [Parameter] public bool Disabled { get; set; } = false;
 
     /// <summary>
     /// Required callback function that will take the current search text and return a list of Tuple<string, string> objects
     /// </summary>
-    [Parameter]
-    public Func<string, Task<List<(string key, string label)>?>>? GetAutoCompleteItems { get; set; }
+    [Parameter] public Func<string, Task<List<(string key, string label)>?>>? GetAutoCompleteItems { get; set; }
 
-    [Parameter]
-    public bool HighlightFirstMatch { get; set; }
+    [Parameter] public bool HighlightFirstMatch { get; set; }
 
     /// <summary>
     /// An optional Id for the input element (defaults to a random Guid)
     /// </summary>
-    [Parameter]
-    public string Id { get; set; } = Guid.NewGuid().ToString().Replace("-", "");
+    [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString().Replace("-", "");
 
-    [Parameter]
-    public bool MatchParentWidth { get; set; } = true;
+    [Parameter] public bool MatchParentWidth { get; set; } = true;
 
     /// <summary>
     /// The minimum characters required to perform a lookup (defaults to 2)
     /// </summary>
-    [Parameter]
-    public int MinimumCharacters { get; set; } = 2;
+    [Parameter] public int MinimumCharacters { get; set; } = 2;
 
     /// <summary>
     /// The method that will be invoked when an item is selected. The action will pass
     /// a Tuple<string, string> for the selected item.
     /// </summary>
-    [Parameter]
-    public EventCallback<(string key, string label)> OnSelected { get; set; }
+    [Parameter] public EventCallback<(string key, string label)> OnSelected { get; set; }
 
     /// <summary>
     /// The time in milliseconds after stopping typing before the lookup is started.
     /// </summary>
-    [Parameter]
-    public int LookupDelay { get; set; } = 500;
+    [Parameter] public int LookupDelay { get; set; } = 500;
 
     /// <summary>
     /// Optional placeholder text.
     /// </summary>
-    [Parameter]
-    public string PlaceholderText { get; set; } = "";
+    [Parameter] public string PlaceholderText { get; set; } = "";
 
     /// <summary>
     /// Optional tab index for the element.
     /// </summary>
-    [Parameter]
-    public int TabIndex { get; set; } = 0;
+    [Parameter] public int TabIndex { get; set; } = 0;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

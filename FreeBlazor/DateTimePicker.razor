@@ -40,6 +40,7 @@
                                    type="date"
                                    class="@InputClass"
                                    value="@_valueDateOnly"
+                                   aria-label="@AriaLabel"
                                    @onchange="OnChangeDateTime"
                                    required="@(!_nullable)"
                                    step="@InputStep"
@@ -54,6 +55,7 @@
                                    type="time"
                                    class="@InputClass"
                                    value="@_valueTimeOnly"
+                                   aria-label="@AriaLabel"
                                    @onchange="OnChangeTime"
                                    required="@(!_nullable)"
                                    step="@InputStep"
@@ -68,6 +70,7 @@
                                    type="datetime-local"
                                    class="@InputClass"
                                    value="@_valueDateTime"
+                                   aria-label="@AriaLabel"
                                    @onchange="OnChangeDateTime"
                                    required="@(!_nullable)"
                                    step="@InputStep"
@@ -120,6 +123,7 @@
                     type="date"
                     class="@InputClass"
                     value="@_valueDateOnly"
+                    aria-label="@AriaLabel"
                     @onchange="OnChangeDateTime"
                     required="@(!_nullable)"
                     step="@InputStep"
@@ -132,6 +136,7 @@
                     type="time"
                     class="@InputClass"
                     value="@_valueTimeOnly"
+                    aria-label="@AriaLabel"
                     @onchange="OnChangeTime"
                     required="@(!_nullable)"
                     step="@InputStep"
@@ -144,6 +149,7 @@
                     type="datetime-local"
                     class="@InputClass"
                     value="@_valueDateTime"
+                    aria-label="@AriaLabel"
                     @onchange="OnChangeDateTime"
                     required="@(!_nullable)"
                     step="@InputStep"
@@ -182,4 +188,3 @@
         </button>
     }
 }
-

@@ -6,11 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <BaseOutputPath></BaseOutputPath>
     <Title>FreeBlazor</Title>
-    <Version>1.0.62</Version>
+    <Version>1.0.63</Version>
     <Authors>Bradley R. Wickett</Authors>
     <Company></Company>
     <Description>A collection of free open-source Blazor components.</Description>
-    <Copyright>2025 Bradley R. Wickett</Copyright>
+    <Copyright>2026 Bradley R. Wickett</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageOutputPath>NuGet</PackageOutputPath>
     <PackageProjectUrl>https://wickett.visualstudio.com/FreeBlazor</PackageProjectUrl>

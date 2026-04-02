@@ -7,10 +7,16 @@
            maxlength="@Length"
            @bind="_value"
            @bind:after="ValueHasChanged"
-           @bind:event="oninput" />
+           @bind:event="oninput" 
+           aria-label="@AriaLabel"/>
 </div>
 
 @code {
+    /// <summary>
+    /// Optional aria-label text
+    /// </summary>
+    [Parameter] public string AriaLabel { get; set; } = "Confirmation Code";
+
     /// <summary>
     /// The color of the background (defaults to transparent.)
     /// </summary>

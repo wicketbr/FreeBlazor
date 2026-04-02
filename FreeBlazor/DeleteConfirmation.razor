@@ -1,6 +1,6 @@
 ﻿@if (ShowConfirmation) {
     <div class="btn-group" role="group">
-        <button type="button" class="@_cancelButtonClass @_buttonSize" @onclick="CancelClicked">
+        <button type="button" class="@_cancelButtonClass @_buttonSize" @onclick="CancelClicked" aria-label="@CancelButtonAriaLabel">
             @if (!String.IsNullOrWhiteSpace(_cancelIcon)) {
                 @((MarkupString)_cancelIcon)
             }
@@ -8,7 +8,7 @@
                 <span>@_cancelText</span>
             }
         </button>
-        <button type="button" class="@_confirmDeleteButtonClass @_buttonSize" @onclick="DeleteConfirmed">
+        <button type="button" class="@_confirmDeleteButtonClass @_buttonSize" @onclick="DeleteConfirmed" aria-label="@ConfirmDeleteButtonAriaLabel">
             @if (!String.IsNullOrWhiteSpace(_confirmDeleteIcon)) {
                 @((MarkupString)_confirmDeleteIcon)
             }
@@ -18,7 +18,7 @@
         </button>
     </div>
 } else {
-    <button type="button" class="@_deleteButtonClass @_buttonSize" @onclick="DeleteClicked" disabled="@Disabled">
+    <button type="button" class="@_deleteButtonClass @_buttonSize" @onclick="DeleteClicked" disabled="@Disabled" aria-label="@DeleteButtonAriaLabel">
         @if (!String.IsNullOrWhiteSpace(_deleteIcon)) {
             @((MarkupString)_deleteIcon)
         }
@@ -56,6 +56,16 @@
     [Parameter] public bool Disabled { get; set; }
 
     /// <summary>
+    /// Optional aria-label text for the delete button
+    /// </summary>
+    [Parameter] public string DeleteButtonAriaLabel { get; set; } = "Delete";
+
+    /// <summary>
+    /// An option to override the default delete button class of "btn btn-danger"
+    /// </summary>
+    [Parameter] public string? DeleteButtonClass { get; set; }
+
+    /// <summary>
     /// An option to override the default delete icon with your own value. Use "none" or "n/a" to hide the icon.
     /// </summary>
     [Parameter] public string? DeleteIcon { get; set; }
@@ -66,9 +76,14 @@
     [Parameter] public string? DeleteText { get; set; }
 
     /// <summary>
-    /// An option to override the default delete button class of "btn btn-danger"
+    /// Optional aria-label text for the cancel button
     /// </summary>
-    [Parameter] public string? DeleteButtonClass { get; set; }
+    [Parameter] public string CancelButtonAriaLabel { get; set; } = "Cancel";
+
+    /// <summary>
+    /// An option to override the default cancel button class of "btn btn-dark"
+    /// </summary>
+    [Parameter] public string? CancelButtonClass { get; set; }
 
     /// <summary>
     /// An option to override teh default cancel icon with your own value. Use "none" or "n/a" to hide the icon.
@@ -81,11 +96,6 @@
     [Parameter] public string? CancelText { get; set; }
 
     /// <summary>
-    /// An option to override the default cancel button class of "btn btn-dark"
-    /// </summary>
-    [Parameter] public string? CancelButtonClass { get; set; }
-
-    /// <summary>
     /// An option to override teh default confirm delete icon with your own value. Use "none" or "n/a" to hide the icon.
     /// </summary>
     [Parameter] public string? ConfirmDeleteIcon { get; set; }
@@ -94,6 +104,11 @@
     /// An option to override the default "Confirm Delete" text. Use "none" or "n/a" to hide the text.
     /// </summary>
     [Parameter] public string? ConfirmDeleteText { get; set; }
+
+    /// <summary>
+    /// Optional aria-label text for the confirm delete button
+    /// </summary>
+    [Parameter] public string ConfirmDeleteButtonAriaLabel { get; set; } = "Confirm Delete";
 
     /// <summary>
     /// An option to override the default confirm delete button class of "btn btn-danger"

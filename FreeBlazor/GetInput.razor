@@ -8,20 +8,20 @@
 <div class="mb-2">
     @switch (_userInputType) {
         case InputType.Text:
-            <input id="@_id" type="text" class="@_class" 
+            <input id="@_id" type="text" class="@_class" aria-label="@AriaLabel"
                 @bind="_singleValue" @bind:event="oninput"
                 @onkeyup="SingleValueKeyUp" placeholder="@_placeholderText" />
             break;
 
         case InputType.Textarea:
-            <textarea id="@_id" class="@_class" 
+            <textarea id="@_id" class="@_class" aria-label="@AriaLabel"
                 @bind="_singleValue" @bind:event="oninput" 
                 @onkeyup="SingleValueKeyUp" placeholder="@_placeholderText"></textarea>
             break;
 
         case InputType.Select:
             if (_userInputOptions.Any()) {
-                <select id="@_id" class="@_class" @onchange="SingleValueChanged">
+                <select id="@_id" class="@_class" @onchange="SingleValueChanged" aria-label="@AriaLabel">
                     @if (!String.IsNullOrWhiteSpace(_placeholderText)) {
                         <option value="">@_placeholderText</option>
                     }
@@ -36,7 +36,7 @@
 
         case InputType.Multiselect:
             if (_userInputOptions.Any()) {
-                <select id="@_id" class="@_class" @onchange="MultiSelectChanged" multiple="multiple" size="@_multiSelectRows">
+                <select id="@_id" class="@_class" @onchange="MultiSelectChanged" multiple="multiple" size="@_multiSelectRows" aria-label="@AriaLabel">
                     @foreach (var item in _userInputOptions) {
                         <option value="@item.Key">@item.Value</option>
                     }
@@ -123,6 +123,11 @@
         public string Value { get; set; } = "";
         public bool Selected { get; set; }
     }
+
+    /// <summary>
+    /// Optional aria-label text
+    /// </summary>
+    [Parameter] public string AriaLabel { get; set; } = "";
 
     /// <summary>
     /// An optional class to add to the input element(s).

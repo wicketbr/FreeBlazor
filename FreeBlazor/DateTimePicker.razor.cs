@@ -29,6 +29,11 @@ namespace FreeBlazor
         protected string? _valueTimeOnly;
 
         /// <summary>
+        /// Optional aria-label text
+        /// </summary>
+        [Parameter] public string AriaLabel { get; set; } = "";
+
+        /// <summary>
         /// An optional class to add to the wrapper table (defaults to "datetime-picker").
         /// </summary>
         [Parameter] public string? Class { get; set; } = "datetime-picker";
