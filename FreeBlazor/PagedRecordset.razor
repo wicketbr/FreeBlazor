@@ -154,31 +154,41 @@
 
                         string thClass = "data-element-" + StringValue(c.DataElementName).ToLower() + " " + StringValue(c.Class) + " " + StringValue(c.Align);
 
-                        <th title="@c.TipText" class="@thClass.Trim()">
-                            @if (c.Sortable || !String.IsNullOrWhiteSpace(c.Label)) {
-                                if (c.Sortable) {
-                                    if (elementName.ToLower() == _sort.ToLower()) {
-                                        buttonClass += " btn-primary";
-                                    } else {
-                                        buttonClass += " btn-dark";
-                                    }
-                                } else {
-                                    buttonClass += " disabled";
-                                }
-                                <button type="button" class="@buttonClass" @onclick="@(() => ColumnClicked(c))" disabled="@isDisabled">
-                                    @if (StringValue(c.DataElementName).ToLower() == _sort.ToLower()) {
-                                        if (_sortOrder == "ASC") {
-                                            <i class="fas fa-caret-up sort-arrow"></i>
+                        var label = c.Label;
+
+                        if (c.Sortable && String.IsNullOrWhiteSpace(label)) {
+                            label = c.DataElementName;
+                        }
+
+                        if (String.IsNullOrWhiteSpace(label)) {
+                            <td title="@c.TipText" class="@thClass.Trim()"></td>
+                        } else {
+                            <th title="@c.TipText" class="@thClass.Trim()">
+                                @if (c.Sortable || !String.IsNullOrWhiteSpace(c.Label)) {
+                                    if (c.Sortable) {
+                                        if (elementName.ToLower() == _sort.ToLower()) {
+                                            buttonClass += " btn-primary";
                                         } else {
-                                            <i class="fas fa-caret-down sort-arrow"></i>
+                                            buttonClass += " btn-dark";
                                         }
+                                    } else {
+                                        buttonClass += " disabled";
                                     }
-                                    @if (!String.IsNullOrWhiteSpace(c.Label)) {
-                                        <i>@((MarkupString)c.Label)</i>
-                                    }
-                                </button>
-                            }
-                        </th>
+                                    <button type="button" class="@buttonClass" @onclick="@(() => ColumnClicked(c))" disabled="@isDisabled">
+                                        @if (StringValue(c.DataElementName).ToLower() == _sort.ToLower()) {
+                                            if (_sortOrder == "ASC") {
+                                                <i class="fas fa-caret-up sort-arrow"></i>
+                                            } else {
+                                                <i class="fas fa-caret-down sort-arrow"></i>
+                                            }
+                                        }
+                                        @if (!String.IsNullOrWhiteSpace(label)) {
+                                            <i>@((MarkupString)label)</i>
+                                        }
+                                    </button>
+                                }
+                            </th>
+                        }
                     }
                 }
             </tr>
