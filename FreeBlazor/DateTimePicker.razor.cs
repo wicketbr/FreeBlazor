@@ -153,10 +153,9 @@ namespace FreeBlazor
         [Parameter] public object? Value { get; set; }
 
         /// <summary>
-        /// Option to wrap the picker in a table for formatting. Defaults to true.
-        /// If disabled your formatting may be off.
+        /// Option to wrap the picker in a table for formatting. Defaults to false for accessibility compliance.
         /// </summary>
-        [Parameter] public bool WrapInTable { get; set; } = true;
+        [Parameter] public bool WrapInTable { get; set; } = false;
 
         protected override void OnAfterRender(bool firstRender)
         {

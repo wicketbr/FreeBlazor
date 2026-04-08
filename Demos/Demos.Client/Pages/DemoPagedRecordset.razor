@@ -5,6 +5,7 @@
 <PagedRecordset 
     @ref="_pagedRecordset"
     ActionHandlers="_actionHandlers"
+    CenterItems="CenterItems"
     CheckboxCallbackHandler="CheckboxesUpdated"
     ExtraRowDataItems="_extraRowData"
     Formatters="_pagedRecordsetFormatters"
@@ -12,7 +13,7 @@
     NavigationCallbackHander="NavigationCallbackHander"
     RecordData="_data"
     TableClass="table table-sm paged-recordset-table"
-    UseBootstrap="true" 
+    UseBootstrap="true"
 />
 
 <div class="mb-2">
@@ -37,6 +38,7 @@
 
 @code {
     List<PagedRecordset.ActionHandler> _actionHandlers = new List<PagedRecordset.ActionHandler>();
+    Dictionary<string, Action?> CenterItems = new Dictionary<string, Action?>();
     protected int[] _checkedItems = new int[] { };
     PagedRecordset.Config _config = new PagedRecordset.Config();
     PagedRecordset.Recordset _data = new PagedRecordset.Recordset();
@@ -207,6 +209,9 @@
         }
 
         _data.Records = data;
+
+        CenterItems = new Dictionary<string, Action?>();
+        //CenterItems.Add("<span class=\"badge rounded-pill text-bg-primary\">Sample Center Item</span>", null);
 
         StateHasChanged();
     }

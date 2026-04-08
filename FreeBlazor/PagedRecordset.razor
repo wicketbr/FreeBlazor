@@ -65,66 +65,125 @@
     bool centerItemsShown = false;
 
     if (_navLocation == NavLocation.Top || _navLocation == NavLocation.Both) {
-        <table class="paged-recordset-navigation paged-recordset-margin-bottom">
-            <tbody>
-                <tr>
-                    <td class="paged-recordset-left">
-                        <span>@showingLabel</span>
-                        <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected" aria-label="@AriaLabelRecordsPerPage">
-                            @foreach (var rpp in _recordsPerPageOptions) {
-                                if (rpp == recordsPerPage) {
-                                    <option value="@rpp" SELECTED>@rpp</option>
-                                } else {
-                                    <option value="@rpp">@rpp</option>
-                                }
-                            }
-                        </select>
-                    </td>
-                    <td class="paged-recordset-center">
-                        @if (_centerItems != null && _centerItems.Any()) {
-                            centerItemsShown = true;
-                            foreach (var centerItem in _centerItems) {
-                                if (centerItem.Value != null) {
-                                    <span class="paged-recordset-center-item" @onclick="@(() => CenterItemClicked(centerItem.Value))">@((MarkupString)centerItem.Key)</span>
-                                } else {
-                                    <span class="paged-recordset-center-item">@((MarkupString)centerItem.Key)</span>
-                                }
-                            }
-                        }
-                    </td>
-                    <td class="paged-recordset-right">
-                        <nav>
-                            <ul class="@paginationClass">
-                                @if (currentPage == 1) {
-                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
-                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
-                                } else {
-                                    <li class="page-item" @onclick="(() => PageNavigationClicked(1))"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
-                                    <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage - 1))"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
-                                }
-
-                                @for (int x = startPage; x <= endPage; x++) {
-                                    int pageId = x;
-                                    if (currentPage == pageId) {
-                                        <li class="page-item active"><div class="page-link">@pageId</div></li>
+        if (TableLayoutForMenus) {
+            <table class="paged-recordset-navigation paged-recordset-margin-bottom">
+                <tbody>
+                    <tr>
+                        <td class="paged-recordset-left">
+                            <span>@showingLabel</span>
+                            <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected" aria-label="@AriaLabelRecordsPerPage">
+                                @foreach (var rpp in _recordsPerPageOptions) {
+                                    if (rpp == recordsPerPage) {
+                                        <option value="@rpp" SELECTED>@rpp</option>
                                     } else {
-                                        <li class="page-item" @onclick="(() => PageNavigationClicked(pageId))"><div class="page-link">@pageId</div></li>
+                                        <option value="@rpp">@rpp</option>
                                     }
                                 }
-
-                                @if (currentPage == endPage) {
-                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
-                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
-                                } else {
-                                    <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage + 1))"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
-                                    <li class="page-item" @onclick="(() => PageNavigationClicked(pageCount))"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                            </select>
+                        </td>
+                        <td class="paged-recordset-center">
+                            @if (_centerItems != null && _centerItems.Any()) {
+                                centerItemsShown = true;
+                                foreach (var centerItem in _centerItems) {
+                                    if (centerItem.Value != null) {
+                                        <span class="paged-recordset-center-item" @onclick="@(() => CenterItemClicked(centerItem.Value))">@((MarkupString)centerItem.Key)</span>
+                                    } else {
+                                        <span class="paged-recordset-center-item">@((MarkupString)centerItem.Key)</span>
+                                    }
                                 }
-                            </ul>
-                        </nav>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                            }
+                        </td>
+                        <td class="paged-recordset-right">
+                            <nav>
+                                <ul class="@paginationClass">
+                                    @if (currentPage == 1) {
+                                        <li class="page-item disabled"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                        <li class="page-item disabled"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                                    } else {
+                                        <li class="page-item" @onclick="(() => PageNavigationClicked(1))"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                        <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage - 1))"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                                    }
+
+                                    @for (int x = startPage; x <= endPage; x++) {
+                                        int pageId = x;
+                                        if (currentPage == pageId) {
+                                            <li class="page-item active"><div class="page-link">@pageId</div></li>
+                                        } else {
+                                            <li class="page-item" @onclick="(() => PageNavigationClicked(pageId))"><div class="page-link">@pageId</div></li>
+                                        }
+                                    }
+
+                                    @if (currentPage == endPage) {
+                                        <li class="page-item disabled"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                        <li class="page-item disabled"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                                    } else {
+                                        <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage + 1))"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                        <li class="page-item" @onclick="(() => PageNavigationClicked(pageCount))"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                                    }
+                                </ul>
+                            </nav>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        } else {
+            <div class="paged-recordset-navigation paged-recordset-margin-bottom">
+                <div class="paged-recordset-left">
+                    <span>@showingLabel</span>
+                    <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected" aria-label="@AriaLabelRecordsPerPage">
+                        @foreach (var rpp in _recordsPerPageOptions) {
+                            if (rpp == recordsPerPage) {
+                                <option value="@rpp" SELECTED>@rpp</option>
+                            } else {
+                                <option value="@rpp">@rpp</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="paged-recordset-center">
+                    @if (_centerItems != null && _centerItems.Any()) {
+                        centerItemsShown = true;
+                        foreach (var centerItem in _centerItems) {
+                            if (centerItem.Value != null) {
+                                <span class="paged-recordset-center-item" @onclick="@(() => CenterItemClicked(centerItem.Value))">@((MarkupString)centerItem.Key)</span>
+                            } else {
+                                <span class="paged-recordset-center-item">@((MarkupString)centerItem.Key)</span>
+                            }
+                        }
+                    }
+                </div>
+                <div class="paged-recordset-right">
+                    <nav>
+                        <ul class="@paginationClass">
+                            @if (currentPage == 1) {
+                                <li class="page-item disabled"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                <li class="page-item disabled"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                            } else {
+                                <li class="page-item" @onclick="(() => PageNavigationClicked(1))"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage - 1))"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                            }
+
+                            @for (int x = startPage; x <= endPage; x++) {
+                                int pageId = x;
+                                if (currentPage == pageId) {
+                                    <li class="page-item active"><div class="page-link">@pageId</div></li>
+                                } else {
+                                    <li class="page-item" @onclick="(() => PageNavigationClicked(pageId))"><div class="page-link">@pageId</div></li>
+                                }
+                            }
+
+                            @if (currentPage == endPage) {
+                                <li class="page-item disabled"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                <li class="page-item disabled"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                            } else {
+                                <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage + 1))"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                <li class="page-item" @onclick="(() => PageNavigationClicked(pageCount))"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        }
     }
 
     <table class="@_tableClass">
@@ -160,11 +219,17 @@
                             label = c.DataElementName;
                         }
 
-                        if (String.IsNullOrWhiteSpace(label)) {
-                            <td title="@c.TipText" class="@thClass.Trim()"></td>
+                        if (!String.IsNullOrWhiteSpace(c.AriaLabel) || String.IsNullOrWhiteSpace(label)) {
+                            if (!String.IsNullOrWhiteSpace(c.AriaLabel) && !String.IsNullOrWhiteSpace(label)) {
+                                <td title="@c.TipText" class="@thClass.Trim()" aria-label="@c.AriaLabel">@((MarkupString)label)</td>
+                            } else if (!String.IsNullOrWhiteSpace(c.AriaLabel)) {
+                                <td title="@c.TipText" class="@thClass.Trim()" aria-label="@c.AriaLabel"></td>
+                            } else if (!String.IsNullOrWhiteSpace(label)) {
+                                <td title="@c.TipText" class="@thClass.Trim()">@((MarkupString)label)</td>
+                            }
                         } else {
                             <th title="@c.TipText" class="@thClass.Trim()">
-                                @if (c.Sortable || !String.IsNullOrWhiteSpace(c.Label)) {
+                                @if (c.Sortable || !String.IsNullOrWhiteSpace(label)) {
                                     if (c.Sortable) {
                                         if (elementName.ToLower() == _sort.ToLower()) {
                                             buttonClass += " btn-primary";
@@ -282,7 +347,6 @@
                         }
 
                         @if (_includeCheckboxes) {
-
                             <td>
                                 @if (_checkedItems[thisIndex]) {
                                     <input type="checkbox" class="form-check-input" @onchange="@((ChangeEventArgs e) => ToggleCheckbox(e, thisIndex))" checked aria-label="@CheckboxAriaLabel" />
@@ -297,7 +361,7 @@
                                 string tdClass = "data-item-" + StringValue(c.DataElementName).ToLower() + " " + StringValue(c.Class) + " " + StringValue(c.Align);
 
                                 var value = GetObjectPropertyValue(r, c.DataElementName);
-                                <td class="@tdClass">@((MarkupString)FormatData(value, c, index, r))</td>
+                                <td class="@tdClass.Trim()">@((MarkupString)FormatData(value, c, index, r))</td>
                             }
                         }
                     </tr>
@@ -344,22 +408,82 @@
     </table>
 
     @if (_navLocation == NavLocation.Bottom || _navLocation == NavLocation.Both) {
-        <table class="paged-recordset-navigation paged-recordset-margin-top">
-            <tbody>
-                <tr>
-                    <td class="paged-recordset-left">
-                        <span>@showingLabel</span>
-                        <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected" aria-label="@AriaLabelRecordsPerPage">
-                            @foreach (var rpp in _recordsPerPageOptions) {
-                                if (rpp == recordsPerPage) {
-                                    <option value="@rpp" SELECTED>@rpp</option>
-                                } else {
-                                    <option value="@rpp">@rpp</option>
+        if (TableLayoutForMenus) {
+            <table class="paged-recordset-navigation paged-recordset-margin-top">
+                <tbody>
+                    <tr>
+                        <td class="paged-recordset-left">
+                            <span>@showingLabel</span>
+                            <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected" aria-label="@AriaLabelRecordsPerPage">
+                                @foreach (var rpp in _recordsPerPageOptions) {
+                                    if (rpp == recordsPerPage) {
+                                        <option value="@rpp" SELECTED>@rpp</option>
+                                    } else {
+                                        <option value="@rpp">@rpp</option>
+                                    }
+                                }
+                            </select>
+                        </td>
+                        <td class="paged-recordset-center">
+                            @if (!centerItemsShown && _centerItems != null && _centerItems.Any()) {
+                                foreach (var centerItem in _centerItems) {
+                                    if (centerItem.Value != null) {
+                                        <span class="paged-recordset-center-item" @onclick="@(() => CenterItemClicked(centerItem.Value))">@((MarkupString)centerItem.Key)</span>
+                                    } else {
+                                        <span class="paged-recordset-center-item">@((MarkupString)centerItem.Key)</span>
+                                    }
                                 }
                             }
-                        </select>
-                    </td>
-                    <td class="paged-recordset-center">
+                        </td>
+                        <td class="paged-recordset-right">
+                            <nav>
+                                <ul class="@paginationClass">
+                                    @if (currentPage == 1) {
+                                        <li class="page-item disabled"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                        <li class="page-item disabled"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                                    } else {
+                                        <li class="page-item" @onclick="(() => PageNavigationClicked(1))"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                        <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage - 1))"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                                    }
+
+                                    @for (int x = startPage; x <= endPage; x++) {
+                                        int pageId = x;
+                                        if (currentPage == pageId) {
+                                            <li class="page-item active"><div class="page-link">@pageId</div></li>
+                                        } else {
+                                            <li class="page-item" @onclick="(() => PageNavigationClicked(pageId))"><div class="page-link">@pageId</div></li>
+                                        }
+                                    }
+
+                                    @if (currentPage == endPage) {
+                                        <li class="page-item disabled"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                        <li class="page-item disabled"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                                    } else {
+                                        <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage + 1))"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                        <li class="page-item" @onclick="(() => PageNavigationClicked(pageCount))"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                                    }
+                                </ul>
+                            </nav>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        } else {
+            <div class="paged-recordset-navigation paged-recordset-margin-top">
+                <div class="paged-recordset-left">
+                    <span>@showingLabel</span>
+                    <select class="@recordsPerPageClass" @onchange="@RecordsPerPageSelected" aria-label="@AriaLabelRecordsPerPage">
+                        @foreach (var rpp in _recordsPerPageOptions) {
+                            if (rpp == recordsPerPage) {
+                                <option value="@rpp" SELECTED>@rpp</option>
+                            } else {
+                                <option value="@rpp">@rpp</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="paged-recordset-center">
+                    @if (_centerItems != null && _centerItems.Any()) {
                         @if (!centerItemsShown && _centerItems != null && _centerItems.Any()) {
                             foreach (var centerItem in _centerItems) {
                                 if (centerItem.Value != null) {
@@ -369,40 +493,40 @@
                                 }
                             }
                         }
-                    </td>
-                    <td class="paged-recordset-right">
-                        <nav>
-                            <ul class="@paginationClass">
-                                @if (currentPage == 1) {
-                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
-                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
-                                } else {
-                                    <li class="page-item" @onclick="(() => PageNavigationClicked(1))"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
-                                    <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage - 1))"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
-                                }
+                    }
+                </div>
+                <div class="paged-recordset-right">
+                    <nav>
+                        <ul class="@paginationClass">
+                            @if (currentPage == 1) {
+                                <li class="page-item disabled"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                <li class="page-item disabled"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                            } else {
+                                <li class="page-item" @onclick="(() => PageNavigationClicked(1))"><div class="page-link" title="@_config.TextFirstRecord">@((MarkupString)StringValue(_config.IconFirstRecord))</div></li>
+                                <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage - 1))"><div class="page-link" title="@_config.TextPreviousRecord">@((MarkupString)StringValue(_config.IconPreviousRecord))</div></li>
+                            }
 
-                                @for (int x = startPage; x <= endPage; x++) {
-                                    int pageId = x;
-                                    if (currentPage == pageId) {
-                                        <li class="page-item active"><div class="page-link">@pageId</div></li>
-                                    } else {
-                                        <li class="page-item" @onclick="(() => PageNavigationClicked(pageId))"><div class="page-link">@pageId</div></li>
-                                    }
-                                }
-
-                                @if (currentPage == endPage) {
-                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
-                                    <li class="page-item disabled"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                            @for (int x = startPage; x <= endPage; x++) {
+                                int pageId = x;
+                                if (currentPage == pageId) {
+                                    <li class="page-item active"><div class="page-link">@pageId</div></li>
                                 } else {
-                                    <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage + 1))"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
-                                    <li class="page-item" @onclick="(() => PageNavigationClicked(pageCount))"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                                    <li class="page-item" @onclick="(() => PageNavigationClicked(pageId))"><div class="page-link">@pageId</div></li>
                                 }
-                            </ul>
-                        </nav>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                            }
+
+                            @if (currentPage == endPage) {
+                                <li class="page-item disabled"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                <li class="page-item disabled"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                            } else {
+                                <li class="page-item" @onclick="(() => PageNavigationClicked(currentPage + 1))"><div class="page-link" title="@_config.TextNextRecord">@((MarkupString)StringValue(_config.IconNextRecord))</div></li>
+                                <li class="page-item" @onclick="(() => PageNavigationClicked(pageCount))"><div class="page-link" title="@_config.TextLastRecord">@((MarkupString)StringValue(_config.IconLastRecord))</div></li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        }
     }
 }
 
@@ -543,6 +667,14 @@
     /// </summary>
     [Parameter]
     public string? TableHeaderRowClass { get; set; }
+
+    /// <summary>
+    /// OPTIONAL: Indicates if the top and/or bottom menus (navigation, records per page, etc.)
+    /// should use a table for layout (old method) instead of divs. Tables for non-recordsets
+    /// are considered a bad layout for accessibility, so the default is now to use divs.
+    /// </summary>
+    [Parameter]
+    public bool TableLayoutForMenus { get; set; } = false;
 
     /// <summary>
     /// OPTIONAL: Flag to indicate you are using Bootstrap for styling the layout.
@@ -1374,6 +1506,10 @@
         /// For boolean data types, an optional icon to show for true elements.
         /// </summary>
         public string? BooleanIcon { get; set; }
+        /// <summary>
+        /// An optional aria-label to use for the column header. If present, the header will be rendered as a td element instead of a th element.
+        /// </summary>
+        public string? AriaLabel { get; set; }
     }
 
     /// <summary>

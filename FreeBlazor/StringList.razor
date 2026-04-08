@@ -14,10 +14,16 @@
             @for (int i = 0; i < _values.Count; i++) {
                 var currentIndex = i;
                 var item = _values[i];
+                var itemId = Guid.NewGuid().ToString().Replace("-", "").ToLower();
+                var ariaLabel = !String.IsNullOrWhiteSpace(AriaLabelForInputItem)
+                    ? AriaLabelForInputItem  + " " + (currentIndex + 1).ToString()
+                    : "Item " + (currentIndex + 1).ToString();
 
                 <tr>
                     <td style="width:auto;">
                         <input type="text" class="form-control" 
+                            id="@itemId"
+                            aria-label="@ariaLabel"
                             @bind="@_values[currentIndex]"
                             @bind:event="oninput"
                             @bind:after="ValuesChanged" />
@@ -34,6 +40,12 @@
 }
 
 @code {
+    /// <summary>
+    /// The text to be used to generate the aria-label for the input items that will
+    /// include the number of the item after the text.
+    /// </summary>
+    [Parameter] public string AriaLabelForInputItem { get; set; } = "Item";
+
     /// <summary>
     /// The List&lt;string&gt; values.
     /// </summary>

@@ -1,4 +1,8 @@
-﻿/*
+﻿.nowrap {
+    white-space: nowrap;
+}
+
+/*
     Styles for the AutoComplete component
 */
 .autocomplete-search-results {
@@ -43,52 +47,52 @@ select.form-select.records-per-page {
 }
 
 table.paged-recordset-navigation {
-    width:100%;
+    width: 100%;
 }
 
-.paged-recordset-left,
-.paged-recordset-center,
-.paged-recordset-right {
+td.paged-recordset-left,
+td.paged-recordset-center,
+td.paged-recordset-right {
     font-size:0.8em;
 }
 
-.paged-recordset-left {
-    text-align:left;
-    width:33%;
+td.paged-recordset-left {
+    text-align: left;
+    width: 33%;
 }
 
-.paged-recordset-center {
+td.paged-recordset-center {
     text-align: center;
     width: 33%;
 }
 
-.paged-recordset-right {
+td.paged-recordset-right {
     text-align: right;
     width: 33%;
 }
 
-.paged-recordset-left .records-per-page {
+td.paged-recordset-left .records-per-page {
     font-size:0.8em;
 }
 
-.paged-recordset-right nav {
+td.paged-recordset-right nav {
     float: right;
 }
 
-.paged-recordset-right nav ul.pagination {
+td.paged-recordset-right nav ul.pagination {
     font-size:0.8em;
     margin:0;
 }
 
-.paged-recordset-right nav ul.pagination .page-link {
+td.paged-recordset-right nav ul.pagination .page-link {
     padding: .2rem .4rem;
 }
 
-.paged-recordset-right nav ul.pagination li.page-item:not(.disabled) {
+td.paged-recordset-right nav ul.pagination li.page-item:not(.disabled) {
     cursor:pointer;
 }
 
-.paged-recordset-right nav ul.pagination li.page-item:not(.disabled):not(.active) div.page-link {
+td.paged-recordset-right nav ul.pagination li.page-item:not(.disabled):not(.active) div.page-link {
     background-color:#000;
     color:#fff;
 }
@@ -119,7 +123,7 @@ ul.paged-recordset-pagination li.page-item .page-link {
 
 ul.paged-recordset-pagination li.page-item.disabled div.page-link {
     background-color:#333;
-    color:#888;
+    color:#ccc;
     cursor:default;
 }
 
@@ -210,6 +214,36 @@ table.table.paged-recordset-table tr.sep-row td {
     border-color: #dee2e6;
 }
 
+div.paged-recordset-navigation {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items:baseline;
+}
+
+div.paged-recordset-left,
+div.paged-recordset-center,
+div.paged-recordset-right {
+    font-size: 0.8em;
+    flex-grow:1;
+}
+
+div.paged-recordset-center {
+    text-align:center;
+}
+
+div.paged-recordset-right {
+    margin-left:auto;
+    text-align:right;
+}
+
+div.paged-recordset-right nav {
+    display:inline-block;
+    
+}
+
+
+
 
 
 
@@ -269,6 +303,23 @@ table.password-generator input[type="text"],
 table.password-generator input[type="number"] {
     padding: .4em;
     min-height:26px;
+}
+
+div.password-generator {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+}
+
+div.password-generator div.column1 {
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding-right: 1em;
+}
+
+div.password-generator div.column2 {
+    flex-shrink: 0;
 }
 
 
