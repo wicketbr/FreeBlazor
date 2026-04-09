@@ -21,15 +21,16 @@
 
 </div>
 
-<label @onclick="@(() => _htmlEditor.SetFocus())">HTML Editor</label>
-
-<HtmlEditor 
-    @ref="_htmlEditor"
-    Config="_config"
-    OnModeChanged="OnModeChanged"
-    OnUpdate="OnHtmlUpdated"
-    OnValueChanged="StateHasChanged"
-/>
+<fieldset>
+    <legend @onclick="@(() => _htmlEditor.SetFocus())">
+        HTML Editor
+    </legend>
+    <HtmlEditor @ref="_htmlEditor"
+            Config="_config"
+            OnModeChanged="OnModeChanged"
+            OnUpdate="OnHtmlUpdated"
+            OnValueChanged="StateHasChanged" />
+</fieldset>
 
 <div class="mt-2">@((MarkupString)_results)</div>
 
