@@ -1,0 +1,1001 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime jsRuntime
+@if (!_editorInstalled) {
+    if (_editorLoading) {
+        <div>
+            Loading the Quill editor.
+        </div>
+    } else {
+        <div>
+            Unable to load the Quill editor.
+        </div>
+    }
+}
+
+<div class="html-editor2-wrapper @Theme">
+@if (_sourceView == true) {
+    <div class="html-toolbar source-view ql-toolbar ql-snow">
+        <button class="custom-button custom-source" type="button" @onclick="ToggleSourceView">
+            <i class="custom-icon icon-source"></i>
+            @_config.Language?.Source
+        </button>
+    </div>
+
+    <div class="@(_config.Required == true && String.IsNullOrWhiteSpace(_value) ? "html-editor2 missing-required source-mode" : "html-editor2 source-mode")">
+        <div class="ql-container ql-snow">
+            @if (_config.UseMonacoForSourceView == true) {
+                <div id="@_monacoId"></div>
+            } else {
+                <AutoGrowText @ref="_autoGrowText"
+                    Class="source-editor-autogrow"
+                    Id="@_id"
+                    @bind-Value="_value" 
+                    OnValueChanged="ValueChangeFromSourceEditor"
+                    Placeholder="@_config.Language?.PlaceholderText"/>
+            }
+        </div>
+    </div>
+} else {
+    <div class="html-toolbar" id="@_toolbarId">
+        @if (_config.SimpleView == true) {
+            <span class="ql-formats">
+                <select class="ql-header" title="@_config.Language?.Format" aria-label="@_config.Language?.Format">
+                    <option value="" selected>@_config.Language?.Default</option>
+                    <option value="1">@_config.Language?.Header 1</option>
+                    <option value="2">@_config.Language?.Header 2</option>
+                    <option value="3">@_config.Language?.Header 3</option>
+                    <option value="4">@_config.Language?.Header 4</option>
+                    <option value="5">@_config.Language?.Header 5</option>
+                    <option value="6">@_config.Language?.Header 6</option>
+                    <option value="div">div</option>
+                    <option value="pre">pre</option>
+                    <option value="address">address</option>
+                </select>
+            </span>
+
+            <span class="ql-formats">
+                <button class="ql-bold" type="button" title="@_config.Language?.Bold" />
+                <button class="ql-italic" type="button" title="@_config.Language?.Italic" />
+                <button class="ql-underline" type="button" title="@_config.Language?.Underline" />
+                <button class="ql-strike" type="button" title="@_config.Language?.Strikethrough" />
+            </span>
+
+            <span class="ql-formats">
+                <button class="ql-indent" value="-1" type="button" title="@_config.Language?.DecreaseIndent" />
+                <button class="ql-indent" value="+1" type="button" title="@_config.Language?.IncreaseIndent" />
+            </span>
+
+            <span class="ql-formats">
+                <select class="ql-align" title="@_config.Language?.TextAlign" aria-label="@_config.Language?.TextAlign" />
+                <select class="ql-color" title="@_config.Language?.FontColor" aria-label="@_config.Language?.FontColor"/>
+                <select class="ql-background" title="@_config.Language?.BackgroundColor" aria-label="@_config.Language?.BackgroundColor" />
+            </span>
+
+            <span class="ql-formats">
+                <button class="custom-button"
+                        title="@_config.Language?.InsertLineBreak"
+                        aria-label="@_config.Language?.InsertLineBreak"
+                        @onclick="InsertLineBreak">
+                    <i class="custom-icon icon-br"></i>
+                </button>
+
+                <button class="custom-button"
+                        title="@_config.Language?.InsertHorizontalLine"
+                        aria-label="@_config.Language?.InsertHorizontalLine"
+                        @onclick="InsertHorizontalLine">
+                    <i class="custom-icon icon-hr"></i>
+                </button>
+
+                <button class="ql-clean" type="button" title="@_config.Language?.RemoveFormat" />
+
+                <button class="custom-button"
+                        title="@_config.Language?.ShowBlocks"
+                        aria-label="@_config.Language?.ShowBlocks"
+                        @onclick="ToggleShowBlocks">
+                    <i class="custom-icon icon-blocks"></i>
+                </button>
+            </span>
+        } else {
+            <div class="toolbar-row">
+                @if (_config.HideSourceButton != true) {
+                    <span class="ql-formats">
+                        <button class="custom-button custom-source" type="button" @onclick="ToggleSourceView">
+                            <i class="custom-icon icon-source"></i>
+                            @_config.Language?.Source
+                        </button>
+                    </span>
+                }
+
+                <span class="ql-formats">
+                    @if (_config.AllowFeatureBold == true) {
+                        <button class="ql-bold" type="button" title="@_config.Language?.Bold" />
+                    }
+    
+                    @if (_config.AllowFeatureItalic == true) {
+                        <button class="ql-italic" type="button" title="@_config.Language?.Italic" />
+                    }
+
+                    @if (_config.AllowFeatureUnderline == true) {
+                        <button class="ql-underline" type="button" title="@_config.Language?.Underline" />
+                    }
+    
+                    @if (_config.AllowFeatureStrikeThrough == true) {
+                        <button class="ql-strike" type="button" title="@_config.Language?.Strikethrough" />
+                    }
+
+                    @if (_config.AllowFeatureSubscript == true) {
+                        <button class="ql-script" value="sub" type="button" title="@_config.Language?.Subscript" />
+                    }
+
+                    @if (_config.AllowFeatureSuperscript == true) {
+                        <button class="ql-script" value="super" type="button" title="@_config.Language?.Superscript" />
+                    }
+
+                    <button class="ql-clean" type="button" title="@_config.Language?.RemoveFormat" />
+
+                </span>
+
+                <span class="ql-formats">
+                    <button class="ql-list" value="ordered" type="button" title="@_config.Language?.OrderedList" />
+                    <button class="ql-list" value="bullet" type="button" title="@_config.Language?.UnorderedList" />
+                </span>
+
+                <span class="ql-formats">
+                    <button class="ql-indent" value="-1" type="button" title="@_config.Language?.DecreaseIndent" />
+                    <button class="ql-indent" value="+1" type="button" title="@_config.Language?.IncreaseIndent" />
+                </span>
+
+                <span class="ql-formats">
+                    <button class="ql-blockquote" type="button" title="@_config.Language?.Blockquote" />
+                    <button class="ql-direction" value="rtl" type="button" title="@_config.Language?.TextDirection" />
+                </span>
+
+                <span class="ql-formats">
+                    <select class="ql-align" title="@_config.Language?.TextAlign" aria-label="@_config.Language?.TextAlign" />
+                    <button class="ql-link" title="@_config.Language?.Link" />
+                </span>
+
+                <span class="ql-formats">
+                    <button class="custom-button"
+                            title="@_config.Language?.InsertLineBreak"
+                            aria-label="@_config.Language?.InsertLineBreak"
+                            @onclick="InsertLineBreak">
+                        <i class="custom-icon icon-br"></i>
+                    </button>
+
+                    <button class="custom-button"
+                            title="@_config.Language?.InsertHorizontalLine"
+                            aria-label="@_config.Language?.InsertHorizontalLine"
+                            @onclick="InsertHorizontalLine">
+                        <i class="custom-icon icon-hr"></i>
+                    </button>
+
+                    <button class="custom-button"
+                            title="@_config.Language?.ShowBlocks"
+                            aria-label="@_config.Language?.ShowBlocks"
+                            @onclick="ToggleShowBlocks">
+                        <i class="custom-icon icon-blocks"></i>
+                    </button>
+                </span>
+            </div>
+
+            <div class="toolbar-row">
+                <div class="ql-formats">
+                    <div class="ql-group">
+                        <fieldset>
+                            <legend>@_config.Language?.Format</legend>
+                            <select class="ql-header" aria-label="@_config.Language?.Format">
+                                <option value="" selected>@_config.Language?.Default</option>
+                                <option value="1">@_config.Language?.Header 1</option>
+                                <option value="2">@_config.Language?.Header 2</option>
+                                <option value="3">@_config.Language?.Header 3</option>
+                                <option value="4">@_config.Language?.Header 4</option>
+                                <option value="5">@_config.Language?.Header 5</option>
+                                <option value="6">@_config.Language?.Header 6</option>
+                                <option value="div">div</option>
+                                <option value="pre">pre</option>
+                                <option value="address">address</option>
+                            </select>
+                        </fieldset>
+                    </div>
+
+                    @if (_config.AllowFeatureFontSelector == true && _config.AllowFeatureFonts != null && _config.AllowFeatureFonts.Length > 0) {
+                        <div class="ql-group">
+                            <fieldset>
+                                <legend>@_config.Language?.Font</legend>
+                                <select class="ql-font" title="@_config.Language?.Font" aria-label="@_config.Language?.Font">
+                                    <option value="">@_config.Language?.Default</option>
+                                    @foreach (var font in _config.AllowFeatureFonts) {
+                                        if (!String.IsNullOrWhiteSpace(font)) {
+                                            @* <option value="@font.Replace(" ", "-").ToLower()">@font</option> *@
+                                            <option value="@font">@font</option>
+                                        }
+                                    }
+                                </select>
+                            </fieldset>
+                        </div>
+                    }
+
+                    @if (_config.AllowFeatureFontSizeSelector == true && _config.AllowFeatureFontSizes != null && _config.AllowFeatureFontSizes.Length > 0) {
+                        <div class="ql-group">
+                            <fieldset>
+                                <legend>@_config.Language?.FontSize</legend>
+                                <select class="ql-size" title="@_config.Language?.FontSize" aria-label="@_config.Language?.FontSize">
+                                    <option value="" selected>@_config.Language?.Default</option>
+                                    @foreach (var size in _config.AllowFeatureFontSizes) {
+                                        if (!String.IsNullOrWhiteSpace(size)) {
+                                            <option value="@size">@size</option>
+                                        }
+                                    }
+                                </select>
+                            </fieldset>
+                        </div>
+                    }
+                </div>
+
+                @if (_config.AllowFeatureFontColorSelector == true || _config.AllowFeatureBackgroundColorSelector == true) {
+                    <div class="ql-formats">
+                        @if (_config.AllowFeatureFontColorSelector == true) {
+                            <div class="ql-group">
+                                <fieldset>
+                                    <legend>@_config.Language?.FontColor</legend>
+                                    @if (_config.AllowFeatureFontColors != null && _config.AllowFeatureFontColors.Length > 0) {
+                                        <select class="ql-color" title="@_config.Language?.FontColor" aria-label="@_config.Language?.FontColor">
+                                            <option selected></option>
+                                    
+                                            @foreach (var color in _config.AllowFeatureFontColors) {
+                                                if (!String.IsNullOrWhiteSpace(color)) {
+                                                    var colorItem = color.StartsWith("#") ? color : "#" + color;
+                                                    if (colorItem != "#000000") {
+                                                        <option value="@colorItem"></option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                    } else {
+                                        <select class="ql-color" title="@_config.Language?.FontColor" aria-label="@_config.Language?.FontColor" />
+                                    }
+                                </fieldset>
+                            </div>
+                        }
+            
+                        @if (_config.AllowFeatureBackgroundColorSelector == true) {
+                            <div class="ql-group">
+                                <fieldset>
+                                    <legend>@_config.Language?.BackgroundColor</legend>
+                                    @if (_config.AllowFeatureFontColors != null && _config.AllowFeatureFontColors.Length > 0) {
+                                        <select class="ql-background" title="@_config.Language?.BackgroundColor" aria-label="@_config.Language?.BackgroundColor">
+                                            <option selected></option>
+                                    
+                                            @foreach (var color in _config.AllowFeatureFontColors) {
+                                                if (!String.IsNullOrWhiteSpace(color)) {
+                                                    var colorItem = color.StartsWith("#") ? color : "#" + color;
+                                                    if (colorItem.ToLower() != "#ffffff" && colorItem.ToLower() != "#fff") {
+                                                        <option value="@colorItem"></option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                    } else {
+                                        <select class="ql-background" title="@_config.Language?.BackgroundColor" aria-label="@_config.Language?.BackgroundColor" />
+                                    }
+                                </fieldset>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="@(_config.Required == true && String.IsNullOrWhiteSpace(_value) ? "html-editor2 missing-required" : "html-editor2")" id="@_wrapperId"></div>
+}
+</div>
+
+@code {
+    /// <summary>
+    /// Optional Configuration to override default value.
+    /// </summary>
+    [Parameter] public Configuration? Config { get; set; }
+
+    /// <summary>
+    /// Optional flag used to indicate whether the editor should receive the focus after it has loaded.
+    /// </summary>
+    [Parameter] public bool? SetFocusOnLoad { get; set; }
+
+    /// <summary>
+    /// An optional delegate that will be called when the editor is updated. This needs to be a delegate that accepts a string value.
+    /// </summary>
+    [Parameter] public Action<string>? OnUpdate { get; set; }
+
+    /// <summary>
+    /// An optional delegate that will be called when the value is updated.
+    /// This delegate will receive no parameter.
+    /// </summary>
+    [Parameter] public Delegate? OnValueChanged { get; set; }
+
+    /// <summary>
+    /// Optional HTML to set when the editor is loaded.
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+
+    protected Configuration _config = new Configuration();
+    protected string[] _defaultFontSizeList = new string[] { "10px", "11px", "12px", "14px", "16px", "18px", "20px", "22px", "24px", "26px", "28px", "36px", "48px", "72px" };
+    protected string[] _defaultIndentOptions = new string[] { "1em", "2em", "3em", "4em", "5em", "6em", "7em", "8em", "9em", "10em" };
+    protected bool _editorInstalled = true;
+    protected bool _editorLoading = false;
+    protected string _id = Guid.NewGuid().ToString().Replace("-", "");
+    protected IJSObjectReference? jsModule;
+    protected bool _loaded = false;
+    protected bool _loadedMonaco = false;
+    protected string _monacoId = String.Empty;
+    protected bool _showBlocks = false;
+    protected bool _sourceView = false;
+    protected string _toolbarId = String.Empty;
+    protected string _value = String.Empty;
+    protected string _wrapperId = String.Empty;
+
+    protected DotNetObjectReference<HtmlEditor2>? dotNetHelper;
+
+    protected AutoGrowText? _autoGrowText;
+
+    public void Dispose()
+    {
+        dotNetHelper?.Dispose();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) {
+            _monacoId = _id + "-monaco";
+            _toolbarId = _id + "-toolbar";
+            _wrapperId = _id + "-wrapper";
+            StateHasChanged();
+
+            Configuration c = Config != null ? Config : new Configuration();
+
+            _value = !String.IsNullOrWhiteSpace(Value) ? Value : "";
+
+            SetConfig(c);
+
+            dotNetHelper = DotNetObjectReference.Create(this);
+
+            jsModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import",
+                "./_content/FreeBlazor/HtmlEditor2.Razor.js?v=" + Guid.NewGuid().ToString().Replace("-", ""));
+
+            _editorInstalled = await jsModule.InvokeAsync<bool>("HtmlEditorInstalled");
+
+            if (!_editorInstalled) {
+                _editorLoading = true;
+                StateHasChanged();
+                await jsModule.InvokeVoidAsync("HtmlEditorLoad", _config);
+
+                // It can take a few seconds for the ckeditor.js script to load, so try a few checks.
+                for (int x = 0; x < 50; x++) {
+                    _editorInstalled = await jsModule.InvokeAsync<bool>("HtmlEditorInstalled");
+                    if (_editorInstalled) {
+                        break;
+                    }
+
+                    await System.Threading.Tasks.Task.Delay(100);
+                }
+
+                if (_editorInstalled) {
+                    _editorLoading = false;
+                    StateHasChanged();
+                } else {
+                    Console.WriteLine("LOAD FAILED FOR QUILL EDITOR");
+                }
+            }
+
+            if (_editorInstalled) {
+                await jsModule.InvokeVoidAsync("HtmlEditorSetDotNetHelper", dotNetHelper);
+                await jsModule.InvokeVoidAsync("HtmlEditorSetupEditor", _id, _config, _value);
+
+                if (SetFocusOnLoad != null && SetFocusOnLoad == true) {
+                    await SetFocus();
+                }
+            }
+        }
+    }
+
+    protected async Task<bool> BeautifyHtml()
+    {
+        bool output = false;
+
+        if (!String.IsNullOrWhiteSpace(_value) && jsModule != null) {
+            string toUpdate = _value.Replace("&nbsp;", "{{{NonBreakingSpace}}}");
+
+            var updated = await jsModule.InvokeAsync<string>("BeautifyHtml", _value);
+            updated = updated
+                .Replace("&nbsp;", " ")
+                .Replace("{{{NonBreakingSpace}}}", "&nbsp;");
+
+            if (_value != updated) {
+                _value = updated;
+                output = true;
+            }
+        }
+
+        return output;
+    }
+
+    public async Task<string> BeautifyHtml(string? html)
+    {
+        var output = String.Empty;
+
+        if (!String.IsNullOrWhiteSpace(html) && jsModule != null) {
+            output = await jsModule.InvokeAsync<string>("BeautifyHtml", html);
+        }
+
+        return output;
+    }
+
+    protected bool DefaultBooleanValue(bool? ConfigValue, bool Default)
+    {
+        return ConfigValue.HasValue ? ConfigValue.Value : Default;
+    }
+
+    /// <summary>
+    /// Called from javascript to indicate the editor has loaded required javascript libraries.
+    /// </summary>
+    [JSInvokable]
+    public void EditorLoaded()
+    {
+        _loaded = true;
+        StateHasChanged();
+    }
+
+    protected string FixQuillFontStyles(string? html)
+    {
+        string output = String.Empty;
+
+	    if (!String.IsNullOrWhiteSpace(html)) {
+		    output = html;
+	
+		    int safety = 0;
+		    int start = output.ToLower().IndexOf("font-family:");
+		
+		    while (start > -1 && safety < 1000) {
+			    start = output.IndexOf(":", start);
+			    safety++;
+			    int end = output.IndexOf(";", start);
+			    if (end > -1) {
+				    if (start > -1) {
+					    start++;
+					    string inside = output.Substring(start, end - start);
+					    var fixedStyle = inside.Replace("\"", "'");
+
+					    var before = output.Substring(0, start);
+					    var after = output.Substring(end);
+					
+					    output = before + fixedStyle + after;
+				    }
+				
+				    start = output.ToLower().IndexOf("font-family:", end);
+			    }
+		    }
+	    }
+
+	    return output;
+    }
+
+    /// <summary>
+    /// Returns the current HTML from the editor.
+    /// </summary>
+    /// <returns>A string containing the HTML.</returns>
+    public async Task<string> GetHTML()
+    {
+        return _value;
+    }
+
+    protected async Task InsertHorizontalLine()
+    {
+        await InsertText("<hr />");
+    }
+
+    protected async Task InsertLineBreak() 
+    {
+        await InsertText("<br />");
+    }
+
+    /// <summary>
+    /// Inserts text at the current cursor position in the HTML editor.
+    /// </summary>
+    /// <param name="value">The text to insert.</param>
+    public async Task InsertText(string value)
+    {
+        if (_sourceView) {
+            if (_config.UseMonacoForSourceView == true) {
+                if (jsModule != null) {
+                    await jsModule.InvokeVoidAsync("MonacoInsertText", _monacoId, value);
+                }
+            } else {
+                if (_autoGrowText != null) {
+                    await _autoGrowText.InsertText(value);
+                } else {
+                    _value = _value + value;
+                }
+                
+                StateHasChanged();
+            }
+        } else if (_editorInstalled && jsModule != null) {
+            await jsModule.InvokeVoidAsync("HtmlEditorInsertText", _id, value);
+        }
+    }
+
+    [JSInvokable]
+    public void MonacoLoaded()
+    {
+        _loadedMonaco = true;
+        StateHasChanged();
+    }
+
+    protected void SetConfig(Configuration config)
+    {
+        _config = new Configuration {
+            SimpleView = DefaultBooleanValue(config.SimpleView, false),
+            HideSourceButton = DefaultBooleanValue(config.HideSourceButton, false),
+            Required = DefaultBooleanValue(config.Required, false),
+            BeautifyOutput = DefaultBooleanValue(config.BeautifyOutput, false),
+            UseMonacoForSourceView = DefaultBooleanValue(config.UseMonacoForSourceView, false),
+            DarkMode = DefaultBooleanValue(config.DarkMode, false),
+            
+            AllowFeatureBold = DefaultBooleanValue(config.AllowFeatureBold, true),
+            AllowFeatureItalic = DefaultBooleanValue(config.AllowFeatureItalic, true),
+            AllowFeatureUnderline = DefaultBooleanValue(config.AllowFeatureUnderline, true),
+            AllowFeatureStrikeThrough = DefaultBooleanValue(config.AllowFeatureStrikeThrough, true),
+            AllowFeatureSubscript = DefaultBooleanValue(config.AllowFeatureSubscript, true),
+            AllowFeatureSuperscript = DefaultBooleanValue(config.AllowFeatureSuperscript, true),
+            AllowFeatureFontSelector = DefaultBooleanValue(config.AllowFeatureFontSelector, true),
+
+            AllowFeatureFonts = config.AllowFeatureFonts != null && config.AllowFeatureFonts.Length > 0
+                ? config.AllowFeatureFonts
+                : new string[] {
+                    "Arial",
+                    "Courier New",
+                    "Cursive",
+                    "Garamond",
+                    "Georgia",
+                    "Monospace",
+                    "Sans-Serif",
+                    "Serif",
+                    "Tahoma",
+                    "Times New Roman",
+                    "Trebuchet MS",
+                    "Verdana"
+                },
+
+            AllowFeatureFontSizeSelector = DefaultBooleanValue(config.AllowFeatureFontSizeSelector, true),
+            
+            AllowFeatureFontSizes = config.AllowFeatureFontSizes != null && config.AllowFeatureFontSizes.Length > 0
+                ? config.AllowFeatureFontSizes
+                : _defaultFontSizeList,
+            
+            AllowFeatureFontColorSelector = DefaultBooleanValue(config.AllowFeatureFontColorSelector, true),
+            
+            AllowFeatureFontColors = config.AllowFeatureFontColors,
+
+            AllowFeatureBackgroundColorSelector = DefaultBooleanValue(config.AllowFeatureBackgroundColorSelector, true),
+
+            Language = config.Language != null ? config.Language : new HtmlEditorLanguage(),
+        };
+
+        var languageDefaults = new HtmlEditorLanguage();
+
+        if (String.IsNullOrWhiteSpace(_config.Language.BackgroundColor)) {
+            _config.Language.BackgroundColor = languageDefaults.BackgroundColor;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Blockquote)) {
+            _config.Language.Blockquote = languageDefaults.Blockquote;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Bold)) {
+            _config.Language.Bold = languageDefaults.Bold;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.DecreaseIndent)) {
+            _config.Language.DecreaseIndent = languageDefaults.DecreaseIndent;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Default)) {
+            _config.Language.Default = languageDefaults.Default;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Font)) {
+            _config.Language.Font = languageDefaults.Font;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.FontColor)) {
+            _config.Language.FontColor = languageDefaults.FontColor;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.FontSize)) {
+            _config.Language.FontSize = languageDefaults.FontSize;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Format)) {
+            _config.Language.Format = languageDefaults.Format;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Formats)) {
+            _config.Language.Formats = languageDefaults.Formats;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Header)) {
+            _config.Language.Header = languageDefaults.Header;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.IncreaseIndent)) {
+            _config.Language.IncreaseIndent = languageDefaults.IncreaseIndent;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.InsertHorizontalLine)) {
+            _config.Language.InsertHorizontalLine = languageDefaults.InsertHorizontalLine;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.InsertLineBreak)) {
+            _config.Language.InsertLineBreak = languageDefaults.InsertLineBreak;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Italic)) {
+            _config.Language.Italic = languageDefaults.Italic;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Link)) {
+            _config.Language.Link = languageDefaults.Link;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.OrderedList)) {
+            _config.Language.OrderedList = languageDefaults.OrderedList;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.PlaceholderText)) {
+            _config.Language.PlaceholderText = languageDefaults.PlaceholderText;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.ShowBlocks)) {
+            _config.Language.ShowBlocks = languageDefaults.ShowBlocks;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.RemoveFormat)) {
+            _config.Language.RemoveFormat = languageDefaults.RemoveFormat;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Source)) {
+            _config.Language.Source = languageDefaults.Source;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Strikethrough)) {
+            _config.Language.Strikethrough = languageDefaults.Strikethrough;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Subscript)) {
+            _config.Language.Subscript = languageDefaults.Subscript;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Superscript)) {
+            _config.Language.Superscript = languageDefaults.Superscript;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.TextAlign)) {
+            _config.Language.TextAlign = languageDefaults.TextAlign;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.TextDirection)) {
+            _config.Language.TextDirection = languageDefaults.TextDirection;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.Underline)) {
+            _config.Language.Underline = languageDefaults.Underline;
+        }
+
+        if (String.IsNullOrWhiteSpace(_config.Language.UnorderedList)) {
+            _config.Language.UnorderedList = languageDefaults.UnorderedList;
+        }
+    }
+
+    /// <summary>
+    /// Sets the focus to the HTML editor.
+    /// </summary>
+    public async Task SetFocus()
+    {
+        if (_editorInstalled && jsModule != null) {
+            if (_sourceView) {
+                if (_config.UseMonacoForSourceView == true) {
+                    await jsModule.InvokeVoidAsync("MonacoSetFocus", _monacoId);
+                } else {
+                    await jsModule.InvokeVoidAsync("HtmlEditorFocusSourceView", _id);
+                }
+            } else {
+                await jsModule.InvokeVoidAsync("HtmlEditorFocus", _id);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Sets the HTML for the editor.
+    /// </summary>
+    /// <param name="value">The HTML.</param>
+    public async Task SetHTML(string? value)
+    {
+        ValueChanged(value);
+
+        if (_sourceView) {
+            if (_config.UseMonacoForSourceView == true && jsModule != null) {
+                await jsModule.InvokeVoidAsync("MonacoEditorUpdate", _monacoId, _value);
+            }
+        } else if (_editorInstalled && jsModule != null) {
+            await jsModule.InvokeVoidAsync("HtmlEditorUpdate", _id, _value);
+        }
+    }
+
+    protected string Theme
+    {
+        get {
+            string output = _config.DarkMode == true ? "dark" : "light";
+
+            if (_showBlocks) {
+                output += " show-blocks";
+            }
+
+            return output;
+        }
+    }
+
+    protected void ToggleShowBlocks()
+    {
+        _showBlocks = !_showBlocks;
+        StateHasChanged();
+    }
+
+    protected async Task ToggleSourceView()
+    {
+        if (_sourceView) {
+            _sourceView = false;
+
+            await UpdateConfig(_config);
+        } else {
+            if (jsModule != null) {
+                await jsModule.InvokeVoidAsync("DestroyEditor", _id);
+            }
+
+            var updated = await BeautifyHtml();
+            if (updated) {
+                ValueChangeFromSourceEditor();
+            }
+            
+            var decoded = FixQuillFontStyles(System.Web.HttpUtility.HtmlDecode(_value));
+            _value = decoded;
+
+            _sourceView = true;
+            StateHasChanged();
+
+            if (_config.UseMonacoForSourceView == true && jsModule != null) {
+                if (!_loadedMonaco) {
+                    await jsModule.InvokeVoidAsync("LoadMonaco", _config);
+                }
+                
+                // It can take a few seconds for the Monaco script to load, so try a few checks.
+                for (int x = 0; x < 50; x++) {
+                    if (_loadedMonaco) {
+                        break;
+                    }
+
+                    await System.Threading.Tasks.Task.Delay(100);
+                }
+
+                if (_loadedMonaco) {
+                    await jsModule.InvokeVoidAsync("HtmlEditorSetupMonaco", _monacoId, _value, _config.DarkMode);
+                } else {
+                    _config.UseMonacoForSourceView = false;
+                    StateHasChanged();
+                }
+            }
+        }
+
+        await SetFocus();
+    }
+
+    /// <summary>
+    /// Updates the configuration for the editor.
+    /// </summary>
+    public async Task UpdateConfig(Configuration config)
+    {
+        bool themeChanged = config.DarkMode != _config.DarkMode;
+
+        SetConfig(config);
+
+        if (jsModule != null) {
+            if (_sourceView) {
+                if (_config.UseMonacoForSourceView == true && themeChanged) {
+                    await jsModule.InvokeVoidAsync("MonacoUpdateTheme", _monacoId, _config.DarkMode);
+                }
+            } else {
+                await jsModule.InvokeVoidAsync("DestroyEditor", _id);
+
+                _id = Guid.NewGuid().ToString().Replace("-", "");
+                _toolbarId = _id + "-toolbar";
+                _wrapperId = _id + "-wrapper";
+                StateHasChanged();
+
+                await jsModule.InvokeVoidAsync("HtmlEditorSetupEditor", _id, _config, _value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Internal function called from javascript when the value in the editor has changed.
+    /// </summary>
+    [JSInvokable]
+    public void ValueChanged(string? value)
+    {
+        _value = !String.IsNullOrWhiteSpace(value) ? value : "";
+
+        // If the value is just an empty element remove it.
+        switch (_value.ToLower()) {
+            case "<p></p>":
+            case "<div></div>":
+            case "<br>":
+            case "<br/>":
+            case "<br />":
+                _value = "";
+                break;
+        }
+
+        if (OnUpdate != null) {
+            var decoded = FixQuillFontStyles(System.Web.HttpUtility.HtmlDecode(_value));
+            OnUpdate.Invoke(decoded);
+        }
+
+        if (OnValueChanged != null) {
+            OnValueChanged.DynamicInvoke();
+        }
+    }
+
+    protected async void ValueChangeFromSourceEditor()
+    {
+        if (OnUpdate != null) {
+            var html = _value;
+
+            if (_config.BeautifyOutput == true && jsModule != null) {
+                html = await jsModule.InvokeAsync<string>("BeautifyHtml", html);
+            }
+
+            OnUpdate.Invoke(html);
+        }
+
+        if (OnValueChanged != null) {
+            OnValueChanged.DynamicInvoke();
+        }
+    }
+
+    /// <summary>
+    /// The configuration for the HTML editor.
+    /// </summary>
+    public class Configuration
+    {
+        /// <summary>
+        /// The Simple View includes a limited set of formatting tools.
+        /// When enabled the other options for showing and hiding elements are ignored and
+        /// only the following options are shown:
+        /// Bold, Italic, Underline, Decrease Indent, Increase Indent,
+        /// Align Left, Center, Align Right, Justify, Text Color, Background Color, and Show Blocks.
+        /// </summary>
+        public bool? SimpleView { get; set; }
+        /// <summary>
+        /// Option to hide the source button. Defaults to "false".
+        /// </summary>
+        public bool? HideSourceButton { get; set; }
+        /// <summary>
+        /// Option to indicate that the HTML editor is a required field.
+        /// </summary>
+        public bool? Required { get; set; }
+        /// <summary>
+        /// Option to indicate that the HTML should be beautified when updated. Defaults to "false".
+        /// </summary>
+        public bool? BeautifyOutput { get; set; }
+        /// <summary>
+        /// Option to use the Monaco editor for the source view instead of a simple textarea. Defaults to "false".
+        /// When used the Monaco editor will be loaded from the unpkg.com CDN.
+        /// </summary>
+        public bool? UseMonacoForSourceView { get; set; }
+        /// <summary>
+        /// Option to use a dark mode for the editor.
+        /// </summary>
+        public bool? DarkMode { get; set; }
+        /// <summary>
+        /// Option to allow the Bold option. Defaults to "true".
+        /// </summary>
+        public bool? AllowFeatureBold { get; set; }
+        /// <summary>
+        /// Option to allow the Italic option. Defaults to "true".
+        /// </summary>
+        public bool? AllowFeatureItalic { get; set; }
+        /// <summary>
+        /// Option to allow the Underline option. Defaults to "true".
+        /// </summary>
+        public bool? AllowFeatureUnderline { get; set; }
+        /// <summary>
+        /// Option to allow the Strikethrough option. Defaults to "true".
+        /// </summary>
+        public bool? AllowFeatureStrikeThrough { get; set; }
+        /// <summary>
+        /// Option to allow the Subscript option. Defaults to "true".
+        /// </summary>
+        public bool? AllowFeatureSubscript { get; set; }
+        /// <summary>
+        /// Option to allow the Superscript option. Defaults to "true".
+        /// </summary>
+        public bool? AllowFeatureSuperscript { get; set; }
+        /// <summary>
+        /// Option to allow the Font Selector option. Defaults to "true".
+        /// </summary>
+        public bool? AllowFeatureFontSelector { get; set; }
+        /// <summary>
+        /// Option to override the default listing of fonts.
+        /// </summary>
+        public string[]? AllowFeatureFonts { get; set; }
+        /// <summary>
+        /// Option to allow the Font Size selector option. Defaults to "true".
+        /// </summary>
+        public bool? AllowFeatureFontSizeSelector { get; set; }
+        /// <summary>
+        /// Option to override the default list of font sizes.
+        /// This array should contain the font size values (e.g. "12px", "14px", "18px", etc.)
+        /// </summary>
+        public string[]? AllowFeatureFontSizes { get; set; }
+        /// <summary>
+        /// Option to allow the Font Color option. Defaults to "true".
+        /// </summary>
+        public bool? AllowFeatureFontColorSelector { get; set; }
+        /// <summary>
+        /// Option to override the default list of font colors for the font color selector.
+        /// </summary>
+        public string[]? AllowFeatureFontColors { get; set; }
+        /// <summary>
+        /// Option to allow the Font Background Color option. Defaults to "true".
+        /// </summary>
+        public bool? AllowFeatureBackgroundColorSelector { get; set; }
+        /// <summary>
+        /// The language used in the interface.
+        /// </summary>
+        public HtmlEditorLanguage? Language { get; set; } = new HtmlEditorLanguage();
+    }
+    /// <summary>
+    /// The language options for the HTML editor.
+    /// </summary>
+    public class HtmlEditorLanguage
+    {
+        public string? BackgroundColor { get; set; } = "Background Color";
+        public string? Blockquote { get; set; } = "Blockquote";
+        public string? Bold { get; set; } = "Bold";
+        public string? DecreaseIndent { get; set; } = "Decrease Indent";
+        public string? Default { get; set; } = "Default";
+        public string? Font { get; set; } = "Font";
+        public string? FontColor { get; set; } = "Font Color";
+        public string? FontSize { get; set; } = "Font Size";
+        public string? Format { get; set; } = "Format";
+        public string? Formats { get; set; } = "Formats";
+        public string? Header { get; set; } = "Header";
+        public string? IncreaseIndent { get; set; } = "Increase Indent";
+        public string? InsertHorizontalLine { get; set; } = "Insert Horizontal Line";
+        public string? InsertLineBreak { get; set; } = "Insert Line Break";
+        public string? Italic { get; set; } = "Italic";
+        public string? Link { get; set; } = "Link";
+        public string? OrderedList { get; set; } = "Ordered List";
+        public string? PlaceholderText { get; set; } = "Enter Your HTML Here";
+        public string? RemoveFormat { get; set; } = "Remove Format";
+        public string? ShowBlocks { get; set; } = "Show Blocks";
+        public string? Source { get; set; } = "Source";
+        public string? Strikethrough { get; set; } = "Strikethrough";
+        public string? Subscript { get; set; } = "Subscript";
+        public string? Superscript { get; set; } = "Superscript";
+        public string? TextAlign { get; set; } = "Text Align";
+        public string? TextDirection { get; set; } = "Text Direction";
+        public string? Underline { get; set; } = "Underline";
+        public string? UnorderedList { get; set; } = "Unordered List";
+    }
+}

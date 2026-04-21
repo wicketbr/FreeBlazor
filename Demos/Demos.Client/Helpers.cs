@@ -312,6 +312,59 @@ public static class Helpers
     }
 
     /// <summary>
+    /// A popup HTML editor.
+    /// </summary>
+    /// <param name="OnEditCompleted">The required Delegate that will receive the HTML when the OK button is clicked.</param>
+    /// <param name="HTML">Optional HTML to set in the editor.</param>
+    /// <param name="Title">Optional title to override the default title.</param>
+    /// <param name="config">Optional Configuration object to override default editor options.</param>
+    /// <param name="width">Optional width. Leave empty for the default or set to "auto" for the dialog defaults.</param>
+    /// <param name="height">Optional width. Leave empty for the default or set to "auto" for the dialog defaults.</param>
+    public static async Task HtmlEditor2(Delegate OnEditCompleted, string HTML = "", string Title = "", FreeBlazor.HtmlEditor2.Configuration? config = null, string width = "", string height = "")
+    {
+        if (String.IsNullOrWhiteSpace(Title)) {
+            Title = "Edit HTML";
+        }
+
+        Dictionary<string, object> parameters = new Dictionary<string, object>();
+        parameters.Add("OnEditCompleted", OnEditCompleted);
+        parameters.Add("Value", HTML);
+
+        if (config != null) {
+            parameters.Add("Config", config);
+        }
+
+        string top = String.Empty;
+
+        if (String.IsNullOrWhiteSpace(width)) {
+            width = "95%";
+            top = "80px";
+        }
+
+        if (String.IsNullOrWhiteSpace(height)) {
+            height = "calc(100vh - 120px)";
+            top = "80px";
+        }
+
+        if (width == "auto") {
+            width = "";
+        }
+
+        if (height == "auto") {
+            height = "";
+        }
+
+        await _dialogService.OpenAsync<HtmlEditorDialog2>(Title, parameters, new DialogOptions() {
+            AutoFocusFirstElement = false,
+            Resizable = false,
+            Draggable = false,
+            Width = width,
+            Height = height,
+            Top = top,
+        });
+    }
+
+    /// <summary>
     /// Indicates if the helper class has been initialized by passing the required injection libraries.
     /// </summary>
     public static bool Initialized
@@ -327,5 +380,20 @@ public static class Helpers
     public static void ModalClose()
     {
         _dialogService.Close();
+    }
+
+    /// <summary>
+    /// Executes a function after a specific delay.
+    /// </summary>
+    /// <param name="methodToInvoke">The delegate to the method to invoke.</param>
+    /// <param name="millisecondsDelay">The milliseconds to delay before executing (defaults to 100.)</param>
+    public static void SetTimeout(Delegate methodToInvoke, int millisecondsDelay = 100)
+    {
+        System.Threading.Timer? timer = null;
+        timer = new System.Threading.Timer((obj) => {
+            methodToInvoke.DynamicInvoke();
+            timer?.Dispose();
+        },
+        null, millisecondsDelay, System.Threading.Timeout.Infinite);
     }
 }

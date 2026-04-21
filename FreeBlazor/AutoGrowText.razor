@@ -1,3 +1,4 @@
+@implements IDisposable
 @inject IJSRuntime jsRuntime
 <textarea class="@Class" id="@ElementId" @bind="_value" @bind:event="oninput" @bind:after="ValueHasChanged" placeholder="@Placeholder" rows="1" aria-label="@AriaLabel"></textarea>
 @code {
@@ -55,6 +56,12 @@
     protected string _lastValue = "";
     protected string _value = "";
 
+    protected DotNetObjectReference<AutoGrowText>? dotNetHelper;
+
+    public void Dispose() {
+        dotNetHelper?.Dispose();
+    }
+
     protected override void OnInitialized()
     {
         _autoGrowTimer = new System.Timers.Timer();
@@ -75,6 +82,9 @@
                 "./_content/FreeBlazor/AutoGrowText.Razor.js?v=" + Guid.NewGuid().ToString().Replace("-", ""));
 
             await jsModule.InvokeVoidAsync("Init", ElementId, MinimumHeight);
+
+            dotNetHelper = DotNetObjectReference.Create(this);
+            await jsModule.InvokeVoidAsync("SetDotNetHelper", dotNetHelper);
         }
     }
 
@@ -110,6 +120,13 @@
         }
     }
 
+    public async Task InsertText(string text)
+    {
+        if (jsModule != null) {
+            await jsModule.InvokeVoidAsync("InsertText", text);
+        }
+    }
+
     protected void UpdateTimer(Object? source, System.Timers.ElapsedEventArgs e)
     {
         ValueChanged.InvokeAsync(_value);
@@ -126,6 +143,17 @@
 
         if (jsModule != null) {
             await jsModule.InvokeVoidAsync("ResizeElementFromCode");
+        }
+    }
+
+    [JSInvokable]
+    public void ValueUpdatedFromCode(string? value)
+    {
+        _value = !String.IsNullOrWhiteSpace(value) ? value : String.Empty;
+
+        ValueChanged.InvokeAsync(_value);
+        if (OnValueChanged != null) {
+            OnValueChanged.DynamicInvoke();
         }
     }
 }

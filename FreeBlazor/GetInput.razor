@@ -1,7 +1,7 @@
 ﻿@inject IJSRuntime jsRuntime
 @if (!String.IsNullOrWhiteSpace(_instructions)) {
     <div class="mt-2 mb-2">
-        <label for="@_id">@((MarkupString)_instructions)</label>
+        @((MarkupString)_instructions)
     </div>
 }
 

@@ -1,17 +1,32 @@
 ﻿@page "/StringList"
 
+<PageTitle>String List</PageTitle>
 <h1>String List</h1>
 
 <div class="mb-2">
     <button type="button" class="btn btn-success" @onclick="Add">
         Add a New Item to the List
     </button>
+
+    <button type="button"
+            class="btn btn-primary"
+            disabled="@(_items == null || _items.Count == 0)"
+            @onclick="FocusFirstItem">
+        Focus First Item
+    </button>
+
+    <button type="button"
+            class="btn btn-primary"
+            disabled="@(_items == null || _items.Count == 0)"
+            @onclick="FocusLastItem">
+        Focus Last Item
+    </button>
 </div>
 
-<StringList 
-    @bind-Value="_items"
-    OnValueChanged="StateHasChanged"
-    />
+<StringList @ref="_stringList"
+        Id="demo-stringlist"
+        @bind-Value="_items"
+        OnValueChanged="StateHasChanged" />
 
 <div class="mt-2">
     @if (_items != null && _items.Any(x => !String.IsNullOrWhiteSpace(x))) {
@@ -24,8 +39,32 @@
 @code {
     protected List<string> _items = new List<string> { "Test Item 1", "Test Item 2" };
 
-    protected void Add()
+    protected StringList? _stringList;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (firstRender) {
+            Helpers.SetTimeout(FocusFirstItem);
+        }
+    }
+
+    protected async Task Add()
     {
         _items.Add("");
+
+        await FocusLastItem();
+    }
+
+    protected async Task FocusFirstItem()
+    {
+        if (_stringList != null) {
+            await _stringList.FocusElement(0);
+        }
+    }
+
+    protected async Task FocusLastItem()
+    {
+        if (_stringList != null) {
+            await _stringList.FocusLastElement();
+        }
     }
 }

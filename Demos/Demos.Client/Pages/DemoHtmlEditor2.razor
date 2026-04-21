@@ -1,0 +1,164 @@
+﻿@page "/HTMLEditor2"
+
+<PageTitle>HTML Editor v. 2</PageTitle>
+<h1>HTML Editor v. 2</h1>
+
+<div class="alert alert-info">
+    Instead of updating the existing HtmlEditor component which uses
+    the ckEditor, this is a new version of the HTML Editor built using Quill.
+    <br />
+    <br />
+    While much of the configuration is the same, some items have moved or changed.
+    Other configuration items have been removed for this more lightweight editor.
+</div>
+
+<div class="mb-2">
+    <button type="button" class="btn btn-primary" @onclick="SetEditorFocus">
+        Set HTML Editor Focus
+    </button>
+
+    <button type="button" class="btn btn-primary" @onclick="SetHtmlValue">
+        Set HTML Editor Content Value
+    </button>
+
+    <button type="button" class="btn btn-primary" @onclick="InsertText">
+        Insert Text at Cursor Position
+    </button>
+
+    <button type="button" class="btn btn-secondary" @onclick="ToggleSimpleEditorView">
+        Toggle Simple Editor View
+    </button>
+
+    <button type="button" class="btn btn-dark" @onclick="ToggleDarkMode">
+        Toggle Dark Mode
+    </button>
+</div>
+
+<fieldset>
+    <legend @onclick="@(() => _htmlEditor.SetFocus())">
+        HTML Editor
+    </legend>
+    <HtmlEditor2 @ref="_htmlEditor"
+            Config="_config"
+            OnUpdate="OnHtmlUpdated"
+            OnValueChanged="StateHasChanged" 
+            SetFocusOnLoad="true" />
+</fieldset>
+
+<div class="mt-2">@((MarkupString)_results)</div>
+
+<div class="mt-2">
+    <label for="raw-html">Raw HTML</label>
+    <AutoGrowText 
+        Class="form-control"
+        Id="raw-html"
+        Value="@_raw" />
+</div>
+
+<hr />
+
+<fieldset>
+    <legend @onclick="@(() => _htmlEditor2.SetFocus())">
+        Simple Editor - Beautify Output False
+    </legend>
+    <HtmlEditor2 @ref="_htmlEditor2"
+            Config="_config2"
+            OnUpdate="OnHtmlUpdated2"
+            OnValueChanged="StateHasChanged" 
+            SetFocusOnLoad="false" />
+</fieldset>
+
+<div class="mt-2">@((MarkupString)_results2)</div>
+
+<div class="mt-2">
+    <label for="raw-html-2">Raw HTML</label>
+    <AutoGrowText Class="form-control"
+                  Id="raw-html-2"
+                  Value="@_raw2" />
+</div>
+
+@code {
+    HtmlEditor2 _htmlEditor = null!;
+    HtmlEditor2 _htmlEditor2 = null!;
+    protected bool _simpleView = false;
+
+    protected HtmlEditor2.Configuration _config = new HtmlEditor2.Configuration {
+        BeautifyOutput = true,
+        HideSourceButton = false,
+        Language = new HtmlEditor2.HtmlEditorLanguage {
+            PlaceholderText = "Create Some HTML Here",
+        },
+        Required = false,
+        SimpleView = false,
+        UseMonacoForSourceView = true,
+    };
+
+    protected HtmlEditor2.Configuration _config2 = new HtmlEditor2.Configuration {
+        SimpleView = true,
+    };
+
+    protected string _results = "No HTML Value Set";
+    protected string _results2 = "No HTML Value Set";
+    protected string _raw = String.Empty;
+    protected string _raw2 = String.Empty;
+
+    protected void OnHtmlUpdated(string html)
+    {
+        if (String.IsNullOrWhiteSpace(html)) {
+            _results = "No HTML Value Set";
+            _raw = String.Empty;
+        } else {
+            _raw = html;
+            _results =
+                "<div class='mb-2'>HTML:</div>" +
+                "<div class='mb-2'>" + html + "</div>";
+        }
+        StateHasChanged();
+    }
+
+    protected void OnHtmlUpdated2(string html)
+    {
+        if (String.IsNullOrWhiteSpace(html)) {
+            _results2 = "No HTML Value Set";
+            _raw2 = String.Empty;
+        } else {
+            _raw2 = html;
+            _results2 =
+                "<div class='mb-2'>HTML:</div>" +
+                "<div class='mb-2'>" + html + "</div>";
+        }
+        StateHasChanged();
+    }
+
+    protected async Task InsertText()
+    {
+        await _htmlEditor.InsertText("{Current Date: <b>" + DateTime.Now.ToString() + "</b>}");
+    }
+
+    protected async Task SetEditorFocus()
+    {
+        await _htmlEditor.SetFocus();
+    }
+
+    protected async Task SetHtmlValue()
+    {
+        await _htmlEditor.SetHTML("<p>An example of setting the <strong>HTML</strong> value.</p>");
+    }
+
+    protected async Task ToggleDarkMode()
+    {
+        if (_config.DarkMode == true) {
+            _config.DarkMode = false;
+        } else {
+            _config.DarkMode = true;
+        }
+
+        await _htmlEditor.UpdateConfig(_config);
+    }
+
+    protected async Task ToggleSimpleEditorView()
+    {
+        _config.SimpleView = !_config.SimpleView;
+        await _htmlEditor.UpdateConfig(_config);
+    }
+}

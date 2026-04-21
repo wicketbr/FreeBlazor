@@ -1,4 +1,4 @@
-﻿//var dotNetHelper;
+﻿var dotNetHelper;
 var elementId;
 var minimumHeight;
 
@@ -12,6 +12,20 @@ export function Init(id, minHeight) {
 
     // Set the inital height.
     ResizeElement();
+}
+
+export function InsertText(text) {
+    var el = document.getElementById(elementId);
+
+    if (el != undefined && el != null) {
+        const start = el.selectionStart;
+        const end = el.selectionEnd;
+        el.setRangeText(text, start, end, 'end'); // 'end' moves the cursor to after the new text
+        el.focus();
+
+        var value = el.value;
+        dotNetHelper.invokeMethod("ValueUpdatedFromCode", value);
+    }
 }
 
 function ResizeElement() {
@@ -60,9 +74,9 @@ export function ResizeElementFromCode() {
     setTimeout(() => ResizeElement(), 10);
 }
 
-//export function SetDotNetHelper(value) {
-//    dotNetHelper = value;
-//}
+export function SetDotNetHelper(value) {
+    dotNetHelper = value;
+}
 
 export function UpdateElementId(id) {
     elementId = id;

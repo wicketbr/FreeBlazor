@@ -1,5 +1,6 @@
 ﻿@page "/DateTimePicker"
 
+<PageTitle>DateTime Picker</PageTitle>
 <h1>DateTime Picker</h1>
 
 <div class="mb-2 alert alert-info">
@@ -9,8 +10,9 @@
 </div>
 
 <div class="mb-2">
-    <h2>DateTime? (default behavior)</h2>
+    <label for="demo-datetimepicker1">DateTime? (default behavior)</label>
     <DateTimePicker 
+        Id="demo-datetimepicker1"
         Class="form-control"
         ClearButtonText=""
         ClearButtonTitle="Clear"
@@ -19,7 +21,7 @@
         TValue="DateTime?"
         Value="_dateTimeNullable"
     />
-    <div class="mb-2">
+    <div class="mb-2 mt-2">
         <button type="button" class="btn btn-primary" @onclick="@(() => _dateTimeNullable = DateTime.Now)">
             Set Value in Code
         </button>
@@ -38,8 +40,9 @@
 <hr />
 
 <div class="mb-2">
-    <h2>DateTime</h2>
+    <label for="demo-datetimepicker2">DateTime</label>
     <DateTimePicker 
+        Id="demo-datetimepicker2"
         Class="form-control"
         ClearButtonText=""
         ClearButtonTitle="Clear"
@@ -60,8 +63,9 @@
 <hr />
 
 <div class="mb-2">
-    <h2>DateOnly?</h2>
+    <label for="demo-datetimepicker3">DateOnly?</label>
     <DateTimePicker 
+        Id="demo-datetimepicker3"
         Class="form-control"
         OnUpdate="@((DateOnly? v) => { _dateOnlyNullable = v; StateHasChanged(); })"
         ShowClearButton="true"
@@ -79,8 +83,9 @@
 <hr />
 
 <div class="mb-2">
-    <h2>DateOnly</h2>
+    <label for="demo-datetimepicker4">DateOnly</label>
     <DateTimePicker 
+        Id="demo-datetimepicker4"
         Class="form-control"
         OnUpdate="@((DateOnly v) => { _dateOnly = v; StateHasChanged(); })"
         ShowClearButton="true"
@@ -96,8 +101,9 @@
 <hr />
 
 <div class="mb-2">
-    <h2>TimeOnly?</h2>
+    <label for="demo-datetimepicker5">TimeOnly?</label>
     <DateTimePicker 
+        Id="demo-datetimepicker5"
         Class="form-control"
         OnUpdate="@((TimeOnly? v) => { _timeOnlyNullable = v; StateHasChanged(); })"
         ShowClearButton="true"
@@ -115,8 +121,9 @@
 <hr />
 
 <div class="mb-2">
-    <h2>TimeOnly</h2>
+    <label for="demo-datetimepicker6">TimeOnly</label>
     <DateTimePicker 
+        Id="demo-datetimepicker6"
         Class="form-control"
         OnUpdate="@((TimeOnly v) => { _timeOnly = v; StateHasChanged(); })"
         ShowClearButton="true"

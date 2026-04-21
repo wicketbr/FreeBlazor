@@ -1,112 +1,102 @@
 ﻿@page "/GetInput"
 
-<h3>Get Input</h3>
+<PageTitle>Get Input</PageTitle>
+<h1>Get Input</h1>
 
-<div class="card mb-3">
-    <div class="card-header">
-        <label for="get-input-text">Single Text Line</label>
-    </div>
-    <div class="card-body">
-        <GetInput 
-            Id="get-input-text"
-            UserInputType="GetInput.InputType.Text"
-            PlaceholderText="Enter a Single Line of Text"
-            Class="form-control"
-            DefaultValue="Sample Value"
-            OnInputAccepted="@((string v) => _text = v)"
-            OnValueChanged="StateHasChanged"
-            SetFocus="true"
-        />
+<div class="mb-3">
+    <label for="get-input-text">Single Text Line</label>
+    <GetInput 
+        Id="get-input-text"
+        UserInputType="GetInput.InputType.Text"
+        PlaceholderText="Enter a Single Line of Text"
+        Class="form-control"
+        DefaultValue="Sample Value"
+        OnInputAccepted="@((string v) => _text = v)"
+        OnValueChanged="StateHasChanged"
+        SetFocus="true"
+    />
 
-        @if (!String.IsNullOrWhiteSpace(_text)) {
-            <div class="mt-2">
-                <div>Result:</div>
-                <div>@((MarkupString)_text)</div>
-            </div>
-        }
-    </div>
+    @if (!String.IsNullOrWhiteSpace(_text)) {
+        <div class="mt-2">
+            <div>Result:</div>
+            <div>@((MarkupString)_text)</div>
+        </div>
+    }
 </div>
 
-<div class="card mb-3">
-    <div class="card-header">
-        <label for="get-input-textarea">Textarea</label>
-    </div>
-    <div class="card-body">
-        <GetInput 
-            Id="get-input-textarea"
-            UserInputType="GetInput.InputType.Textarea"
-            PlaceholderText="Enter something here..."
-            Class="form-control"
-            OnInputAccepted="@((string v) => _textarea = v)"
-            OnValueChanged="StateHasChanged"
-        />
+<hr />
 
-        @if (!String.IsNullOrWhiteSpace(_textarea)) {
-            <div class="mt-2">
-                <div>Result:</div>
-                <div>@((MarkupString)_textarea)</div>
-            </div>
-        }
-    </div>
+<div class="mb-3">
+    <label for="get-input-textarea">Textarea</label>
+    <GetInput 
+        Id="get-input-textarea"
+        UserInputType="GetInput.InputType.Textarea"
+        PlaceholderText="Enter something here..."
+        Class="form-control"
+        OnInputAccepted="@((string v) => _textarea = v)"
+        OnValueChanged="StateHasChanged"
+    />
+
+    @if (!String.IsNullOrWhiteSpace(_textarea)) {
+        <div class="mt-2">
+            <div>Result:</div>
+            <div>@((MarkupString)_textarea)</div>
+        </div>
+    }
 </div>
 
-<div class="card mb-3">
-    <div class="card-header">
-        <label for="get-input-select">Select</label>
-    </div>
-    <div class="card-body">
-        <GetInput 
-            Id="get-input-select"
-            UserInputType="GetInput.InputType.Select"
-            PlaceholderText="Select an Option"
-            Class="form-select"
-            UserInputOptions="_selectOptions"
-            OnInputAccepted="@((string v) => _selectValue = v)"
-            OnValueChanged="StateHasChanged"
-        />
+<hr />
 
-        @if (!String.IsNullOrWhiteSpace(_selectValue)) {
-            <div class="mt-2">
-                <div>Result:</div>
-                <div>@((MarkupString)_selectValue)</div>
-            </div>
-        }
-    </div>
+<div class="mb-3">
+    <label for="get-input-select">Select</label>
+    <GetInput 
+        Id="get-input-select"
+        UserInputType="GetInput.InputType.Select"
+        PlaceholderText="Select an Option"
+        Class="form-select"
+        UserInputOptions="_selectOptions"
+        OnInputAccepted="@((string v) => _selectValue = v)"
+        OnValueChanged="StateHasChanged"
+    />
+
+    @if (!String.IsNullOrWhiteSpace(_selectValue)) {
+        <div class="mt-2">
+            <div>Result:</div>
+            <div>@((MarkupString)_selectValue)</div>
+        </div>
+    }
 </div>
 
-<div class="card mb-3">
-    <div class="card-header">
-        <label for="get-input-multiselect">Multi-Select</label>
-    </div>
-    <div class="card-body">
-        <GetInput 
-            Id="get-input-multiselect"
-            UserInputType="GetInput.InputType.Multiselect"
-            MultiselectRows="-1"
-            Class="form-select"
-            UserInputOptions="_selectOptions"
-            OnInputAccepted="@((List<string> v) => _multiSelectValues = v)"
-            OnValueChanged="StateHasChanged"
-        />
+<hr />
 
-        @if (_multiSelectValues.Any()) {
-            <div class="mt-2">
-                <div>Result:</div>
-                <ul>
-                    @foreach(var item in _multiSelectValues) {
-                        <li>@item</li>
-                    }
-                </ul>
-            </div>
-        }
-    </div>
+<div class="mb-3">
+    <label for="get-input-multiselect">Multi-Select</label>
+    <GetInput 
+        Id="get-input-multiselect"
+        UserInputType="GetInput.InputType.Multiselect"
+        MultiselectRows="-1"
+        Class="form-select"
+        UserInputOptions="_selectOptions"
+        OnInputAccepted="@((List<string> v) => _multiSelectValues = v)"
+        OnValueChanged="StateHasChanged"
+    />
+
+    @if (_multiSelectValues.Any()) {
+        <div class="mt-2">
+            <div>Result:</div>
+            <ul>
+                @foreach(var item in _multiSelectValues) {
+                    <li>@item</li>
+                }
+            </ul>
+        </div>
+    }
 </div>
 
-<div class="card mb-3">
-    <div class="card-header">
-        <label for="get-input-radio">Radio</label>
-    </div>
-    <div class="card-body">
+<div class="mb-3">
+    <fieldset>
+        <legend>Radio</legend>
+
         <GetInput 
             Id="get-input-radio"
             UserInputType="GetInput.InputType.Radio"
@@ -121,14 +111,17 @@
                 <div>@((MarkupString)_radioValue)</div>
             </div>
         }
-    </div>
+    </fieldset>
 </div>
 
-<div class="card mb-3">
-    <div class="card-header">
-        <label for="get-input-checkbox">Checkbox</label>
-    </div>
-    <div class="card-body">
+<hr />
+
+<div class="mb-3">
+    <fieldset>
+        <legend>
+            Checkboxes
+        </legend>
+
         <GetInput 
             Id="get-input-checkbox"
             UserInputType="GetInput.InputType.Checkbox"
@@ -147,16 +140,18 @@
                 </ul>
             </div>
         }
-    </div>
+    </fieldset>
 </div>
 
-<div class="card mb-3">
-    <div class="card-header">
-        Confirmation
-    </div>
-    <div class="card-body">
+<hr />
+
+<div class="mb-3">
+    <fieldset>
+        <legend>
+            Confirmation
+        </legend>
+
         <GetInput 
-            Id="get-input-confirmation"
             Class="btn-group btn-group-sm"
             UserInputType="GetInput.InputType.Confirmation"
             OnInputAccepted="GotConfirmationValue"
@@ -168,7 +163,7 @@
                 @((MarkupString)_confirmationValue)
             </div>
         }
-    </div>
+    </fieldset>
 </div>
 @code {
     protected List<string> _checkboxValues = new List<string>();

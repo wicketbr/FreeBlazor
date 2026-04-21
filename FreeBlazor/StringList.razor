@@ -1,4 +1,5 @@
-﻿@if (_values != null && _values.Count > 0) {
+﻿@inject IJSRuntime jsRuntime
+@if (_values != null && _values.Count > 0) {
     string buttonContents = "X";
 
     if (!String.IsNullOrWhiteSpace(RemoveIcon) && !String.IsNullOrWhiteSpace(RemoveText)) {
@@ -9,34 +10,35 @@
         buttonContents = RemoveText;
     }
 
-    <table class="string-list">
-        <tbody>
-            @for (int i = 0; i < _values.Count; i++) {
-                var currentIndex = i;
-                var item = _values[i];
-                var itemId = Guid.NewGuid().ToString().Replace("-", "").ToLower();
-                var ariaLabel = !String.IsNullOrWhiteSpace(AriaLabelForInputItem)
-                    ? AriaLabelForInputItem  + " " + (currentIndex + 1).ToString()
-                    : "Item " + (currentIndex + 1).ToString();
+    <div class="string-list">
+        @for (int i = 0; i < _values.Count; i++) {
+            var currentIndex = i;
+            var item = _values[i];
+            //var itemId = Guid.NewGuid().ToString().Replace("-", "").ToLower();
 
-                <tr>
-                    <td style="width:auto;">
-                        <input type="text" class="form-control" 
+            var itemId = _elementId + "-item-" + currentIndex.ToString();
+
+            var ariaLabel = !String.IsNullOrWhiteSpace(AriaLabelForInputItem)
+                ? AriaLabelForInputItem  + " " + (currentIndex + 1).ToString()
+                : "Item " + (currentIndex + 1).ToString();
+
+            <div class="string-list-row">
+                <div class="string-list-col-1">
+                    <input type="text" class="form-control" 
                             id="@itemId"
                             aria-label="@ariaLabel"
                             @bind="@_values[currentIndex]"
                             @bind:event="oninput"
                             @bind:after="ValuesChanged" />
-                    </td>
-                    <td style="width:1%;">
-                        <button class="@RemoveButtonClass" @onclick="() => RemoveItem(currentIndex)" title="@RemoveTooltip">
-                            @((MarkupString)buttonContents)
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                </div>
+                <div class="string-list-col-2">
+                    <button class="@RemoveButtonClass" @onclick="() => RemoveItem(currentIndex)" title="@RemoveTooltip">
+                        @((MarkupString)buttonContents)
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
 }
 
 @code {
@@ -45,6 +47,8 @@
     /// include the number of the item after the text.
     /// </summary>
     [Parameter] public string AriaLabelForInputItem { get; set; } = "Item";
+
+    [Parameter] public string Id { get; set; } = String.Empty;
 
     /// <summary>
     /// The List&lt;string&gt; values.
@@ -82,7 +86,17 @@
     /// </summary>
     [Parameter] public Delegate? OnValueChanged { get; set; }
 
+    protected string _elementId = String.Empty;
+    protected IJSObjectReference? jsModule;
     protected List<string> _values = new List<string>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) {
+            jsModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import",
+                "./_content/FreeBlazor/StringList.Razor.js?v=" + Guid.NewGuid().ToString().Replace("-", ""));
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -90,8 +104,38 @@
 
     protected override void OnParametersSet()
     {
+        if (!String.IsNullOrWhiteSpace(Id)) {
+            _elementId = Id;
+        }
+
+        if (String.IsNullOrWhiteSpace(_elementId)) {
+            _elementId = "stringlist-" + Guid.NewGuid().ToString().Replace("-", "").ToLower();
+        }
+
         if (System.Text.Json.JsonSerializer.Serialize(_values) != System.Text.Json.JsonSerializer.Serialize(Value)) {
             _values = Value;
+        }
+    }
+
+    public async Task FocusElement(int index)
+    {
+        if (index > -1) {
+            if (jsModule != null) {
+                if (index > Value.Count - 1) {
+                    index = Value.Count - 1;
+                }
+
+                await jsModule.InvokeVoidAsync("Focus", _elementId + "-item-" + index.ToString());
+            }
+        }
+    }
+
+    public async Task FocusLastElement()
+    {
+        if (jsModule != null) {
+            if (Value.Count > 0) {
+                await jsModule.InvokeVoidAsync("Focus", _elementId + "-item-" + (Value.Count - 1).ToString());
+            }
         }
     }
 
