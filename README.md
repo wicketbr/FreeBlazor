@@ -145,6 +145,43 @@ An HTML editor that uses the ckEditor 4 to create an editor that can be used as-
     // Get the HTML
     string html = await _htmlEditor.GetHTML();
 
+### HTML Editor 2
+
+An HTML editor that uses the Quill editor. Very similar
+to the ckEditor version above, with some slight configuration
+changes as some options have been removed and some new
+options have been added. An example of using this component is:
+
+    <HtmlEditor2 
+        @ref="_htmlEditor"
+        Config="_config"
+        OnValueChanged="StateHasChanged" />
+
+    @code {
+        HtmlEditor2 _htmlEditor;
+        protected HtmlEditor2.Configuration _config = new HtmlEditor2.Configuration {
+            PlaceholderText = "Enter Your HTML Here",
+            SimpleView = false,
+            UseMonacoForSourceView = true,
+        };
+    }
+
+    // Examples of interacting with the editor
+    // Set the HTML
+    await _htmlEditor.SetHTML("<p>Your HTML Here</p>");
+
+    // Set the Focus
+    await _htmlEditor.SetFocus();
+
+    // Get the HTML
+    string html = await _htmlEditor.GetHTML();
+
+This new version has an option to use the Monaco editor
+for the source view. If set to false the AutoGrowText
+component will be used instead. The editor also offers
+a dark mode in the configuration. This editor is designed
+to meet accessibility standards, while the older
+free version of the ckEditor has some accessibility issues.
 
 ### MultiSelect
 
