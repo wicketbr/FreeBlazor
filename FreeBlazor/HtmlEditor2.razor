@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
 @inject IJSRuntime jsRuntime
+@implements IDisposable
 @if (!_editorInstalled) {
     if (_editorLoading) {
         <div>
@@ -10,134 +11,53 @@
             Unable to load the Quill editor.
         </div>
     }
-}
-
-<div class="html-editor2-wrapper @Theme">
-@if (_sourceView == true) {
-    <div class="html-toolbar source-view ql-toolbar ql-snow">
-        <button class="custom-button custom-source" type="button" @onclick="ToggleSourceView">
-            <i class="custom-icon icon-source"></i>
-            @_config.Language?.Source
-        </button>
-    </div>
-
-    <div class="@(_config.Required == true && String.IsNullOrWhiteSpace(_value) ? "html-editor2 missing-required source-mode" : "html-editor2 source-mode")">
-        <div class="ql-container ql-snow">
-            @if (_config.UseMonacoForSourceView == true) {
-                <div id="@_monacoId"></div>
-            } else {
-                <AutoGrowText @ref="_autoGrowText"
-                    Class="source-editor-autogrow"
-                    Id="@_id"
-                    @bind-Value="_value" 
-                    OnValueChanged="ValueChangeFromSourceEditor"
-                    Placeholder="@_config.Language?.PlaceholderText"/>
-            }
-        </div>
-    </div>
 } else {
-    <div class="html-toolbar" id="@_toolbarId">
-        @if (_config.SimpleView == true) {
-            <span class="ql-formats">
-                <select class="ql-header" title="@_config.Language?.Format" aria-label="@_config.Language?.Format">
-                    <option value="" selected>@_config.Language?.Default</option>
-                    <option value="1">@_config.Language?.Header 1</option>
-                    <option value="2">@_config.Language?.Header 2</option>
-                    <option value="3">@_config.Language?.Header 3</option>
-                    <option value="4">@_config.Language?.Header 4</option>
-                    <option value="5">@_config.Language?.Header 5</option>
-                    <option value="6">@_config.Language?.Header 6</option>
-                    <option value="div">div</option>
-                    <option value="pre">pre</option>
-                    <option value="address">address</option>
-                </select>
-            </span>
+    <div class="html-editor2-wrapper @Theme">
+    @if (_sourceView == true) {
+        <div class="html-toolbar source-view ql-toolbar ql-snow">
+            <button class="custom-button custom-source" type="button" @onclick="ToggleSourceView">
+                <i class="custom-icon icon-source"></i>
+                @_config.Language?.Source
+            </button>
+        </div>
 
-            <span class="ql-formats">
-                <button class="ql-bold" type="button" title="@_config.Language?.Bold" />
-                <button class="ql-italic" type="button" title="@_config.Language?.Italic" />
-                <button class="ql-underline" type="button" title="@_config.Language?.Underline" />
-                <button class="ql-strike" type="button" title="@_config.Language?.Strikethrough" />
-            </span>
-
-            <span class="ql-formats">
-                <button class="ql-indent" value="-1" type="button" title="@_config.Language?.DecreaseIndent" />
-                <button class="ql-indent" value="+1" type="button" title="@_config.Language?.IncreaseIndent" />
-            </span>
-
-            <span class="ql-formats">
-                <select class="ql-align" title="@_config.Language?.TextAlign" aria-label="@_config.Language?.TextAlign" />
-                <select class="ql-color" title="@_config.Language?.FontColor" aria-label="@_config.Language?.FontColor"/>
-                <select class="ql-background" title="@_config.Language?.BackgroundColor" aria-label="@_config.Language?.BackgroundColor" />
-            </span>
-
-            <span class="ql-formats">
-                <button class="custom-button"
-                        title="@_config.Language?.InsertLineBreak"
-                        aria-label="@_config.Language?.InsertLineBreak"
-                        @onclick="InsertLineBreak">
-                    <i class="custom-icon icon-br"></i>
-                </button>
-
-                <button class="custom-button"
-                        title="@_config.Language?.InsertHorizontalLine"
-                        aria-label="@_config.Language?.InsertHorizontalLine"
-                        @onclick="InsertHorizontalLine">
-                    <i class="custom-icon icon-hr"></i>
-                </button>
-
-                <button class="ql-clean" type="button" title="@_config.Language?.RemoveFormat" />
-
-                <button class="custom-button"
-                        title="@_config.Language?.ShowBlocks"
-                        aria-label="@_config.Language?.ShowBlocks"
-                        @onclick="ToggleShowBlocks">
-                    <i class="custom-icon icon-blocks"></i>
-                </button>
-            </span>
-        } else {
-            <div class="toolbar-row">
-                @if (_config.HideSourceButton != true) {
-                    <span class="ql-formats">
-                        <button class="custom-button custom-source" type="button" @onclick="ToggleSourceView">
-                            <i class="custom-icon icon-source"></i>
-                            @_config.Language?.Source
-                        </button>
-                    </span>
+        <div class="@(_config.Required == true && String.IsNullOrWhiteSpace(_value) ? "html-editor2 missing-required source-mode" : "html-editor2 source-mode")">
+            <div class="ql-container ql-snow">
+                @if (_config.UseMonacoForSourceView == true) {
+                    <div id="@_monacoId"></div>
+                } else {
+                    <AutoGrowText @ref="_autoGrowText"
+                        Class="source-editor-autogrow"
+                        Id="@_id"
+                        @bind-Value="_value" 
+                        OnValueChanged="ValueChangeFromSourceEditor"
+                        Placeholder="@_config.Language?.PlaceholderText"/>
                 }
-
+            </div>
+        </div>
+    } else {
+        <div class="html-toolbar" id="@_toolbarId">
+            @if (_config.SimpleView == true) {
                 <span class="ql-formats">
-                    @if (_config.AllowFeatureBold == true) {
-                        <button class="ql-bold" type="button" title="@_config.Language?.Bold" />
-                    }
-    
-                    @if (_config.AllowFeatureItalic == true) {
-                        <button class="ql-italic" type="button" title="@_config.Language?.Italic" />
-                    }
-
-                    @if (_config.AllowFeatureUnderline == true) {
-                        <button class="ql-underline" type="button" title="@_config.Language?.Underline" />
-                    }
-    
-                    @if (_config.AllowFeatureStrikeThrough == true) {
-                        <button class="ql-strike" type="button" title="@_config.Language?.Strikethrough" />
-                    }
-
-                    @if (_config.AllowFeatureSubscript == true) {
-                        <button class="ql-script" value="sub" type="button" title="@_config.Language?.Subscript" />
-                    }
-
-                    @if (_config.AllowFeatureSuperscript == true) {
-                        <button class="ql-script" value="super" type="button" title="@_config.Language?.Superscript" />
-                    }
-
-                    <button class="ql-clean" type="button" title="@_config.Language?.RemoveFormat" />
-
+                    <select class="ql-header" title="@_config.Language?.Format" aria-label="@_config.Language?.Format">
+                        <option value="" selected>@_config.Language?.Default</option>
+                        <option value="1">@_config.Language?.Header 1</option>
+                        <option value="2">@_config.Language?.Header 2</option>
+                        <option value="3">@_config.Language?.Header 3</option>
+                        <option value="4">@_config.Language?.Header 4</option>
+                        <option value="5">@_config.Language?.Header 5</option>
+                        <option value="6">@_config.Language?.Header 6</option>
+                        <option value="div">div</option>
+                        <option value="pre">pre</option>
+                        <option value="address">address</option>
+                    </select>
                 </span>
 
                 <span class="ql-formats">
-                    <button class="ql-list" value="ordered" type="button" title="@_config.Language?.OrderedList" />
-                    <button class="ql-list" value="bullet" type="button" title="@_config.Language?.UnorderedList" />
+                    <button class="ql-bold" type="button" title="@_config.Language?.Bold" />
+                    <button class="ql-italic" type="button" title="@_config.Language?.Italic" />
+                    <button class="ql-underline" type="button" title="@_config.Language?.Underline" />
+                    <button class="ql-strike" type="button" title="@_config.Language?.Strikethrough" />
                 </span>
 
                 <span class="ql-formats">
@@ -146,13 +66,9 @@
                 </span>
 
                 <span class="ql-formats">
-                    <button class="ql-blockquote" type="button" title="@_config.Language?.Blockquote" />
-                    <button class="ql-direction" value="rtl" type="button" title="@_config.Language?.TextDirection" />
-                </span>
-
-                <span class="ql-formats">
                     <select class="ql-align" title="@_config.Language?.TextAlign" aria-label="@_config.Language?.TextAlign" />
-                    <button class="ql-link" title="@_config.Language?.Link" />
+                    <select class="ql-color" title="@_config.Language?.FontColor" aria-label="@_config.Language?.FontColor"/>
+                    <select class="ql-background" title="@_config.Language?.BackgroundColor" aria-label="@_config.Language?.BackgroundColor" />
                 </span>
 
                 <span class="ql-formats">
@@ -170,6 +86,8 @@
                         <i class="custom-icon icon-hr"></i>
                     </button>
 
+                    <button class="ql-clean" type="button" title="@_config.Language?.RemoveFormat" />
+
                     <button class="custom-button"
                             title="@_config.Language?.ShowBlocks"
                             aria-label="@_config.Language?.ShowBlocks"
@@ -177,120 +95,203 @@
                         <i class="custom-icon icon-blocks"></i>
                     </button>
                 </span>
-            </div>
+            } else {
+                <div class="toolbar-row">
+                    @if (_config.HideSourceButton != true) {
+                        <span class="ql-formats">
+                            <button class="custom-button custom-source" type="button" @onclick="ToggleSourceView">
+                                <i class="custom-icon icon-source"></i>
+                                @_config.Language?.Source
+                            </button>
+                        </span>
+                    }
 
-            <div class="toolbar-row">
-                <div class="ql-formats">
-                    <div class="ql-group">
-                        <fieldset>
-                            <legend>@_config.Language?.Format</legend>
-                            <select class="ql-header" aria-label="@_config.Language?.Format">
-                                <option value="" selected>@_config.Language?.Default</option>
-                                <option value="1">@_config.Language?.Header 1</option>
-                                <option value="2">@_config.Language?.Header 2</option>
-                                <option value="3">@_config.Language?.Header 3</option>
-                                <option value="4">@_config.Language?.Header 4</option>
-                                <option value="5">@_config.Language?.Header 5</option>
-                                <option value="6">@_config.Language?.Header 6</option>
-                                <option value="div">div</option>
-                                <option value="pre">pre</option>
-                                <option value="address">address</option>
-                            </select>
-                        </fieldset>
-                    </div>
+                    <span class="ql-formats">
+                        @if (_config.AllowFeatureBold == true) {
+                            <button class="ql-bold" type="button" title="@_config.Language?.Bold" />
+                        }
+    
+                        @if (_config.AllowFeatureItalic == true) {
+                            <button class="ql-italic" type="button" title="@_config.Language?.Italic" />
+                        }
 
-                    @if (_config.AllowFeatureFontSelector == true && _config.AllowFeatureFonts != null && _config.AllowFeatureFonts.Length > 0) {
+                        @if (_config.AllowFeatureUnderline == true) {
+                            <button class="ql-underline" type="button" title="@_config.Language?.Underline" />
+                        }
+    
+                        @if (_config.AllowFeatureStrikeThrough == true) {
+                            <button class="ql-strike" type="button" title="@_config.Language?.Strikethrough" />
+                        }
+
+                        @if (_config.AllowFeatureSubscript == true) {
+                            <button class="ql-script" value="sub" type="button" title="@_config.Language?.Subscript" />
+                        }
+
+                        @if (_config.AllowFeatureSuperscript == true) {
+                            <button class="ql-script" value="super" type="button" title="@_config.Language?.Superscript" />
+                        }
+
+                        <button class="ql-clean" type="button" title="@_config.Language?.RemoveFormat" />
+
+                    </span>
+
+                    <span class="ql-formats">
+                        <button class="ql-list" value="ordered" type="button" title="@_config.Language?.OrderedList" />
+                        <button class="ql-list" value="bullet" type="button" title="@_config.Language?.UnorderedList" />
+                    </span>
+
+                    <span class="ql-formats">
+                        <button class="ql-indent" value="-1" type="button" title="@_config.Language?.DecreaseIndent" />
+                        <button class="ql-indent" value="+1" type="button" title="@_config.Language?.IncreaseIndent" />
+                    </span>
+
+                    <span class="ql-formats">
+                        <button class="ql-blockquote" type="button" title="@_config.Language?.Blockquote" />
+                        <button class="ql-direction" value="rtl" type="button" title="@_config.Language?.TextDirection" />
+                    </span>
+
+                    <span class="ql-formats">
+                        <select class="ql-align" title="@_config.Language?.TextAlign" aria-label="@_config.Language?.TextAlign" />
+                        <button class="ql-link" title="@_config.Language?.Link" />
+                    </span>
+
+                    <span class="ql-formats">
+                        <button class="custom-button"
+                                title="@_config.Language?.InsertLineBreak"
+                                aria-label="@_config.Language?.InsertLineBreak"
+                                @onclick="InsertLineBreak">
+                            <i class="custom-icon icon-br"></i>
+                        </button>
+
+                        <button class="custom-button"
+                                title="@_config.Language?.InsertHorizontalLine"
+                                aria-label="@_config.Language?.InsertHorizontalLine"
+                                @onclick="InsertHorizontalLine">
+                            <i class="custom-icon icon-hr"></i>
+                        </button>
+
+                        <button class="custom-button"
+                                title="@_config.Language?.ShowBlocks"
+                                aria-label="@_config.Language?.ShowBlocks"
+                                @onclick="ToggleShowBlocks">
+                            <i class="custom-icon icon-blocks"></i>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="toolbar-row">
+                    <div class="ql-formats">
                         <div class="ql-group">
                             <fieldset>
-                                <legend>@_config.Language?.Font</legend>
-                                <select class="ql-font" title="@_config.Language?.Font" aria-label="@_config.Language?.Font">
-                                    <option value="">@_config.Language?.Default</option>
-                                    @foreach (var font in _config.AllowFeatureFonts) {
-                                        if (!String.IsNullOrWhiteSpace(font)) {
-                                            @* <option value="@font.Replace(" ", "-").ToLower()">@font</option> *@
-                                            <option value="@font">@font</option>
-                                        }
-                                    }
+                                <legend>@_config.Language?.Format</legend>
+                                <select class="ql-header" aria-label="@_config.Language?.Format">
+                                    <option value="" selected>@_config.Language?.Default</option>
+                                    <option value="1">@_config.Language?.Header 1</option>
+                                    <option value="2">@_config.Language?.Header 2</option>
+                                    <option value="3">@_config.Language?.Header 3</option>
+                                    <option value="4">@_config.Language?.Header 4</option>
+                                    <option value="5">@_config.Language?.Header 5</option>
+                                    <option value="6">@_config.Language?.Header 6</option>
+                                    <option value="div">div</option>
+                                    <option value="pre">pre</option>
+                                    <option value="address">address</option>
                                 </select>
                             </fieldset>
                         </div>
-                    }
 
-                    @if (_config.AllowFeatureFontSizeSelector == true && _config.AllowFeatureFontSizes != null && _config.AllowFeatureFontSizes.Length > 0) {
-                        <div class="ql-group">
-                            <fieldset>
-                                <legend>@_config.Language?.FontSize</legend>
-                                <select class="ql-size" title="@_config.Language?.FontSize" aria-label="@_config.Language?.FontSize">
-                                    <option value="" selected>@_config.Language?.Default</option>
-                                    @foreach (var size in _config.AllowFeatureFontSizes) {
-                                        if (!String.IsNullOrWhiteSpace(size)) {
-                                            <option value="@size">@size</option>
+                        @if (_config.AllowFeatureFontSelector == true && _config.AllowFeatureFonts != null && _config.AllowFeatureFonts.Length > 0) {
+                            <div class="ql-group">
+                                <fieldset>
+                                    <legend>@_config.Language?.Font</legend>
+                                    <select class="ql-font" title="@_config.Language?.Font" aria-label="@_config.Language?.Font">
+                                        <option value="">@_config.Language?.Default</option>
+                                        @foreach (var font in _config.AllowFeatureFonts) {
+                                            if (!String.IsNullOrWhiteSpace(font)) {
+                                                @* <option value="@font.Replace(" ", "-").ToLower()">@font</option> *@
+                                                <option value="@font">@font</option>
+                                            }
                                         }
-                                    }
-                                </select>
-                            </fieldset>
+                                    </select>
+                                </fieldset>
+                            </div>
+                        }
+
+                        @if (_config.AllowFeatureFontSizeSelector == true && _config.AllowFeatureFontSizes != null && _config.AllowFeatureFontSizes.Length > 0) {
+                            <div class="ql-group">
+                                <fieldset>
+                                    <legend>@_config.Language?.FontSize</legend>
+                                    <select class="ql-size" title="@_config.Language?.FontSize" aria-label="@_config.Language?.FontSize">
+                                        <option value="" selected>@_config.Language?.Default</option>
+                                        @foreach (var size in _config.AllowFeatureFontSizes) {
+                                            if (!String.IsNullOrWhiteSpace(size)) {
+                                                <option value="@size">@size</option>
+                                            }
+                                        }
+                                    </select>
+                                </fieldset>
+                            </div>
+                        }
+                    </div>
+
+                    @if (_config.AllowFeatureFontColorSelector == true || _config.AllowFeatureBackgroundColorSelector == true) {
+                        <div class="ql-formats">
+                            @if (_config.AllowFeatureFontColorSelector == true) {
+                                <div class="ql-group">
+                                    <fieldset>
+                                        <legend>@_config.Language?.FontColor</legend>
+                                        @if (_config.AllowFeatureFontColors != null && _config.AllowFeatureFontColors.Length > 0) {
+                                            <select class="ql-color" title="@_config.Language?.FontColor" aria-label="@_config.Language?.FontColor">
+                                                <option selected></option>
+                                    
+                                                @foreach (var color in _config.AllowFeatureFontColors) {
+                                                    if (!String.IsNullOrWhiteSpace(color)) {
+                                                        var colorItem = color.StartsWith("#") ? color : "#" + color;
+                                                        if (colorItem != "#000000") {
+                                                            <option value="@colorItem"></option>
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        } else {
+                                            <select class="ql-color" title="@_config.Language?.FontColor" aria-label="@_config.Language?.FontColor" />
+                                        }
+                                    </fieldset>
+                                </div>
+                            }
+            
+                            @if (_config.AllowFeatureBackgroundColorSelector == true) {
+                                <div class="ql-group">
+                                    <fieldset>
+                                        <legend>@_config.Language?.BackgroundColor</legend>
+                                        @if (_config.AllowFeatureFontColors != null && _config.AllowFeatureFontColors.Length > 0) {
+                                            <select class="ql-background" title="@_config.Language?.BackgroundColor" aria-label="@_config.Language?.BackgroundColor">
+                                                <option selected></option>
+                                    
+                                                @foreach (var color in _config.AllowFeatureFontColors) {
+                                                    if (!String.IsNullOrWhiteSpace(color)) {
+                                                        var colorItem = color.StartsWith("#") ? color : "#" + color;
+                                                        if (colorItem.ToLower() != "#ffffff" && colorItem.ToLower() != "#fff") {
+                                                            <option value="@colorItem"></option>
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        } else {
+                                            <select class="ql-background" title="@_config.Language?.BackgroundColor" aria-label="@_config.Language?.BackgroundColor" />
+                                        }
+                                    </fieldset>
+                                </div>
+                            }
                         </div>
                     }
                 </div>
+            }
+        </div>
 
-                @if (_config.AllowFeatureFontColorSelector == true || _config.AllowFeatureBackgroundColorSelector == true) {
-                    <div class="ql-formats">
-                        @if (_config.AllowFeatureFontColorSelector == true) {
-                            <div class="ql-group">
-                                <fieldset>
-                                    <legend>@_config.Language?.FontColor</legend>
-                                    @if (_config.AllowFeatureFontColors != null && _config.AllowFeatureFontColors.Length > 0) {
-                                        <select class="ql-color" title="@_config.Language?.FontColor" aria-label="@_config.Language?.FontColor">
-                                            <option selected></option>
-                                    
-                                            @foreach (var color in _config.AllowFeatureFontColors) {
-                                                if (!String.IsNullOrWhiteSpace(color)) {
-                                                    var colorItem = color.StartsWith("#") ? color : "#" + color;
-                                                    if (colorItem != "#000000") {
-                                                        <option value="@colorItem"></option>
-                                                    }
-                                                }
-                                            }
-                                        </select>
-                                    } else {
-                                        <select class="ql-color" title="@_config.Language?.FontColor" aria-label="@_config.Language?.FontColor" />
-                                    }
-                                </fieldset>
-                            </div>
-                        }
-            
-                        @if (_config.AllowFeatureBackgroundColorSelector == true) {
-                            <div class="ql-group">
-                                <fieldset>
-                                    <legend>@_config.Language?.BackgroundColor</legend>
-                                    @if (_config.AllowFeatureFontColors != null && _config.AllowFeatureFontColors.Length > 0) {
-                                        <select class="ql-background" title="@_config.Language?.BackgroundColor" aria-label="@_config.Language?.BackgroundColor">
-                                            <option selected></option>
-                                    
-                                            @foreach (var color in _config.AllowFeatureFontColors) {
-                                                if (!String.IsNullOrWhiteSpace(color)) {
-                                                    var colorItem = color.StartsWith("#") ? color : "#" + color;
-                                                    if (colorItem.ToLower() != "#ffffff" && colorItem.ToLower() != "#fff") {
-                                                        <option value="@colorItem"></option>
-                                                    }
-                                                }
-                                            }
-                                        </select>
-                                    } else {
-                                        <select class="ql-background" title="@_config.Language?.BackgroundColor" aria-label="@_config.Language?.BackgroundColor" />
-                                    }
-                                </fieldset>
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
-        }
+        <div class="@(_config.Required == true && String.IsNullOrWhiteSpace(_value) ? "html-editor2 missing-required" : "html-editor2")" id="@_wrapperId"></div>
+    }
     </div>
-
-    <div class="@(_config.Required == true && String.IsNullOrWhiteSpace(_value) ? "html-editor2 missing-required" : "html-editor2")" id="@_wrapperId"></div>
 }
-</div>
 
 @code {
     /// <summary>
@@ -320,10 +321,11 @@
     [Parameter]
     public string? Value { get; set; }
 
+    protected bool _beautifyInstalled = false;
     protected Configuration _config = new Configuration();
     protected string[] _defaultFontSizeList = new string[] { "10px", "11px", "12px", "14px", "16px", "18px", "20px", "22px", "24px", "26px", "28px", "36px", "48px", "72px" };
     protected string[] _defaultIndentOptions = new string[] { "1em", "2em", "3em", "4em", "5em", "6em", "7em", "8em", "9em", "10em" };
-    protected bool _editorInstalled = true;
+    protected bool _editorInstalled = false;
     protected bool _editorLoading = false;
     protected string _id = Guid.NewGuid().ToString().Replace("-", "");
     protected IJSObjectReference? jsModule;
@@ -364,24 +366,48 @@
             jsModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import",
                 "./_content/FreeBlazor/HtmlEditor2.Razor.js?v=" + Guid.NewGuid().ToString().Replace("-", ""));
 
+            await jsModule.InvokeVoidAsync("HtmlEditorSetDotNetHelper", dotNetHelper);
+
+            _beautifyInstalled = await jsModule.InvokeAsync<bool>("BeautifyIsLoaded");
             _editorInstalled = await jsModule.InvokeAsync<bool>("HtmlEditorInstalled");
 
-            if (!_editorInstalled) {
+            if (!_editorInstalled || !_beautifyInstalled) {
                 _editorLoading = true;
                 StateHasChanged();
-                await jsModule.InvokeVoidAsync("HtmlEditorLoad", _config);
+
+                await jsModule.InvokeVoidAsync("SuspendDefine");
+
+                if (!_editorInstalled) {
+                    await jsModule.InvokeVoidAsync("HtmlEditorLoadCss");
+                    await jsModule.InvokeVoidAsync("LoadScript", "../_content/FreeBlazor/quill/quill.js", "Quill");
+                    //await jsRuntime.InvokeVoidAsync("import", "../_content/FreeBlazor/quill/quill.js");
+                }
+
+                if (!_beautifyInstalled) {
+                    await jsModule.InvokeVoidAsync("LoadScript", "../_content/FreeBlazor/beautify-html/beautify-html.min.js", "BeautifyHtml");
+                    //await jsRuntime.InvokeVoidAsync("import", "../_content/FreeBlazor/beautify-html/beautify-html.min.js");
+                }
 
                 // It can take a few seconds for the ckeditor.js script to load, so try a few checks.
                 for (int x = 0; x < 50; x++) {
-                    _editorInstalled = await jsModule.InvokeAsync<bool>("HtmlEditorInstalled");
-                    if (_editorInstalled) {
+                    // if (!_editorInstalled) {
+                    //     _editorInstalled = await jsModule.InvokeAsync<bool>("HtmlEditorInstalled");
+                    // }
+
+                    // if (!_beautifyInstalled) {
+                    //     _beautifyInstalled = await jsModule.InvokeAsync<bool>("BeautifyIsLoaded");
+                    // }
+                    
+                    if (_editorInstalled && _beautifyInstalled) {
                         break;
                     }
 
                     await System.Threading.Tasks.Task.Delay(100);
                 }
 
-                if (_editorInstalled) {
+                if (_editorInstalled && _beautifyInstalled) {
+                    await jsModule.InvokeVoidAsync("RestoreDefine");
+
                     _editorLoading = false;
                     StateHasChanged();
                 } else {
@@ -389,8 +415,9 @@
                 }
             }
 
-            if (_editorInstalled) {
-                await jsModule.InvokeVoidAsync("HtmlEditorSetDotNetHelper", dotNetHelper);
+            if (_editorInstalled && _beautifyInstalled) {
+                StateHasChanged();
+
                 await jsModule.InvokeVoidAsync("HtmlEditorSetupEditor", _id, _config, _value);
 
                 if (SetFocusOnLoad != null && SetFocusOnLoad == true) {
@@ -525,10 +552,29 @@
         }
     }
 
+    // [JSInvokable]
+    // public void MonacoLoaded()
+    // {
+    //     _loadedMonaco = true;
+    // }
+
     [JSInvokable]
-    public void MonacoLoaded()
+    public void ScriptLoaded(string name)
     {
-        _loadedMonaco = true;
+        switch(name) {
+            case "BeautifyHtml":
+                _beautifyInstalled = true;
+                break;
+
+            case "Quill":
+                _editorInstalled = true;
+                break;
+
+            case "MonacoLoader":
+                _loadedMonaco = true;
+                break;
+        }
+
         StateHasChanged();
     }
 
@@ -775,10 +821,14 @@
 
             if (_config.UseMonacoForSourceView == true && jsModule != null) {
                 if (!_loadedMonaco) {
-                    await jsModule.InvokeVoidAsync("LoadMonaco", _config);
+                    _loadedMonaco = await jsModule.InvokeAsync<bool>("LoaderIsLoaded");
+
+                    if (!_loadedMonaco) {
+                        await jsModule.InvokeVoidAsync("LoadMonacoLoader");
+                    }
                 }
                 
-                // It can take a few seconds for the Monaco script to load, so try a few checks.
+                // It can take a few seconds for the Monaco loader to load, so try a few checks.
                 for (int x = 0; x < 50; x++) {
                     if (_loadedMonaco) {
                         break;

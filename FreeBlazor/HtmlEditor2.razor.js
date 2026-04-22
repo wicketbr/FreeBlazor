@@ -1,9 +1,10 @@
-﻿var configuredSoftbreaks = false;
-var htmlEditorDotNetHelper;
-var editors = [];
+﻿let configuredSoftbreaks = false;
+let htmlEditorDotNetHelper;
+let editors = [];
+let globalDefine = undefined;
 
 export function BeautifyHtml(html) {
-    var output = html;
+    let output = html;
 
     if (typeof (html_beautify) != 'undefined') {
         output = html_beautify(html);
@@ -12,9 +13,19 @@ export function BeautifyHtml(html) {
     return output;
 }
 
+export function BeautifyIsLoaded() {
+    let output = false;
+
+    if (typeof (html_beautify) != 'undefined') {
+        output = true;
+    }
+
+    return output;
+}
+
 export function DestroyEditor(element) {
     if (editors != null && editors[element] != undefined && editors[element] != null) {
-        var updatedEditors = [];
+        let updatedEditors = [];
 
         for (var key in editors) {
             if (key != element) {
@@ -24,6 +35,14 @@ export function DestroyEditor(element) {
 
         editors = updatedEditors;
     }
+}
+
+function getAllScripts() {
+    const allLoadedScripts = performance.getEntriesByType('resource')
+        .filter(resource => resource.initiatorType === 'script' || resource.name.endsWith('.js'))
+        .map(resource => resource.name);
+
+    return allLoadedScripts;
 }
 
 function getFontName(font) {
@@ -37,7 +56,7 @@ export function HtmlEditorFocus(element) {
 }
 
 export function HtmlEditorFocusSourceView(element) {
-    var el = document.getElementById(element);
+    let el = document.getElementById(element);
     if (el != undefined && el != null) {
         el.focus();
     }
@@ -45,7 +64,7 @@ export function HtmlEditorFocusSourceView(element) {
 
 export function HtmlEditorInsertText(element, text) {
     editors[element].focus();
-    var range = editors[element].getSelection(true);
+    let range = editors[element].getSelection(true);
 
     if (range && range.length > 0) {
         editors[element].deleteText(range.index, range.length, 'user');
@@ -56,7 +75,7 @@ export function HtmlEditorInsertText(element, text) {
 }
 
 export function HtmlEditorInstalled() {
-    var output = true;
+    let output = true;
 
     if (typeof (Quill) == 'undefined') {
         output = false;
@@ -65,30 +84,26 @@ export function HtmlEditorInstalled() {
     return output;
 }
 
-export function HtmlEditorLoad(config) {
-    if (typeof (Quill) == 'undefined') {
-        // Quill is not already loaded, so load the script and css file into the head element.
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = '_content/FreeBlazor/quill/quill.js';
-        script.id = 'quill-script';
-        document.head.prepend(script);
+export function HtmlEditorIsLoaded() {
+    let output = false;
 
-        var link = document.createElement('link');
+    if (typeof (Quill) != 'undefined') {
+        output = true;
+    }
+
+    return output;
+}
+
+export function HtmlEditorLoadCss() {
+    let el = document.getElementById('quill-css');
+    if (el == undefined || el == null) {
+        let link = document.createElement('link');
         link.rel = 'stylesheet';
         link.type = 'text/css';
         link.href = '_content/FreeBlazor/quill/quill.snow.css';
         link.media = 'all';
         link.id = 'quill-css';
         document.head.prepend(link);
-    }
-
-    if (typeof (html_beautify) == 'undefined') {
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = '_content/FreeBlazor/beautify-html/beautify-html.min.js';
-        script.id = 'beautify-html-script';
-        document.head.prepend(script);
     }
 }
 
@@ -102,16 +117,16 @@ export function HtmlEditorSetupEditor(element, config, html) {
     }
 
     // Find the toolbar element.
-    var toolbarId = element + "-toolbar";
-    var toolbarElement = document.getElementById(toolbarId);
+    let toolbarId = element + "-toolbar";
+    let toolbarElement = document.getElementById(toolbarId);
     if (!toolbarElement) {
         console.log("Toolbar '" + toolbarId + "' not found.");
         return;
     }
 
     // Find the wrapper and clear any previous contents.
-    var wrapperId = element + "-wrapper";
-    var wrapperElement = document.getElementById(wrapperId);
+    let wrapperId = element + "-wrapper";
+    let wrapperElement = document.getElementById(wrapperId);
 
     if (!wrapperElement) {
         console.log("Wrapper '" + wrapperId + "' not found.");
@@ -120,7 +135,7 @@ export function HtmlEditorSetupEditor(element, config, html) {
         wrapperElement.innerHTML = '<div id="' + element + '"></div>';
     }
 
-    var editorElement = document.getElementById(element);
+    let editorElement = document.getElementById(element);
     if (!editorElement) {
         console.log("Element '" + element + "' not found, unable to create HTML editor.");
         return;
@@ -139,7 +154,7 @@ export function HtmlEditorSetupEditor(element, config, html) {
 
     if (config.allowFeatureFontSelector == true) {
         if (config.allowFeatureFonts != null && config.allowFeatureFonts.length > 0) {
-            var Font = Quill.import('attributors/style/font');
+            let Font = Quill.import('attributors/style/font');
             Font.whitelist = config.allowFeatureFonts;
             Quill.register(Font, true);
         }
@@ -178,7 +193,7 @@ export function HtmlEditorSetupEditor(element, config, html) {
 
     if (config.allowFeatureFontSizeSelector == true) {
         if (config.allowFeatureFontSizes != null && config.allowFeatureFontSizes.length > 0) {
-            var Size = Quill.import('attributors/style/size');
+            let Size = Quill.import('attributors/style/size');
             Size.whitelist = config.allowFeatureFontSizes;
             Quill.register(Size, true);
         }
@@ -219,18 +234,18 @@ export function HtmlEditorSetupEditor(element, config, html) {
     }
     Quill.register(DividerBlot);
 
-    var colors = [];
+    let colors = [];
 
     if (config.allowFeatureColors != null && config.allowFeatureColors.length > 0) {
         colors = config.allowFeatureColors;
     }
 
-    var beautify = false;
+    let beautify = false;
     if (config.beautifyOutput != undefined && config.beautifyOutput != null && config.beautifyOutput == true) {
         beautify = true;
     }
 
-    var quill = new Quill(editorElement, {
+    let quill = new Quill(editorElement, {
         modules: {
             keyboard: {
                 bindings: {
@@ -256,7 +271,7 @@ export function HtmlEditorSetupEditor(element, config, html) {
     });
 
     quill.on('text-change', (delta, oldDelta, source) => {
-        var html = quill.getSemanticHTML();
+        let html = quill.getSemanticHTML();
 
         if (beautify) {
             html = BeautifyHtml(html);
@@ -271,7 +286,7 @@ export function HtmlEditorSetupEditor(element, config, html) {
 }
 
 export function HtmlEditorSetupMonaco(element, value, darkMode) {
-    var el = document.getElementById(element);
+    let el = document.getElementById(element);
     if (el != undefined && el != null) {
         let theme = "vs";
         if (darkMode != undefined && darkMode != null && darkMode == true) {
@@ -279,9 +294,20 @@ export function HtmlEditorSetupMonaco(element, value, darkMode) {
         }
 
         // Configure Monaco loader
+        let loaderScript = "../_content/FreeBlazor/monaco/min/vs";
+        let scripts = getAllScripts();
+        scripts.forEach((element, index, array) => {
+            let i = element.toLowerCase().indexOf("min/vs/loader.js");
+            if (i > -1) {
+                loaderScript = element.substring(0, i + 6);
+            }
+        });
+
         require.config({
             paths: {
-                'vs': 'https://unpkg.com/monaco-editor@0.55.1/min/vs'
+                //'vs': 'https://unpkg.com/monaco-editor@0.54.0/min/vs'
+                //'vs': '../_content/FreeBlazor/monaco/min/vs'
+                'vs': loaderScript
             }
         });
 
@@ -297,6 +323,7 @@ export function HtmlEditorSetupMonaco(element, value, darkMode) {
                 wordWrap: 'on',
                 lineNumbers: 'on',
                 renderWhitespace: 'selection',
+                autoClosingBrackets: 'always',
                 //tabSize: 2,
                 //insertSpaces: true,
             });
@@ -317,29 +344,46 @@ export function HtmlEditorSetupMonaco(element, value, darkMode) {
 }
 
 export function HtmlEditorUpdate(element, html) {
-    var delta = editors[element].clipboard.convert({ html: html });
+    let delta = editors[element].clipboard.convert({ html: html });
     editors[element].setContents(delta, 'silent');
 }
 
-export function LoadMonaco() {
-    var monacoLoader = document.getElementById('monaco-loader-script');
+export function LoadMonacoLoader() {
+    let script = document.createElement('script');
+    script.type = 'text/javascript';
+    //script.src = 'https://unpkg.com/monaco-editor@0.54.0/min/vs/loader.js';
+    script.src = './_content/FreeBlazor/monaco/min/vs/loader.js';
+    script.onload = () => {
+        //htmlEditorDotNetHelper.invokeMethod("MonacoLoaded");
+        htmlEditorDotNetHelper.invokeMethod("ScriptLoaded", "MonacoLoader");
+    };
+    document.head.prepend(script);
+}
 
-    if (monacoLoader != undefined && monacoLoader != null) {
-        htmlEditorDotNetHelper.invokeMethod("MonacoLoaded");
-    } else {
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = 'https://unpkg.com/monaco-editor@0.55.1/min/vs/loader.js';
-        script.id = 'monaco-loader-script';
-        script.onload = () => {
-            htmlEditorDotNetHelper.invokeMethod("MonacoLoaded");
-        };
-        document.head.prepend(script);
+export function LoaderIsLoaded() {
+    let output = false;
+
+    if (typeof (require) != 'undefined') {
+        output = true;
     }
+
+    return output;
+}
+
+export function LoadScript(source, name) {
+    SuspendDefine();
+
+    let script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = source;
+    script.onload = () => {
+        htmlEditorDotNetHelper.invokeMethod("ScriptLoaded", name);
+    };
+    document.head.prepend(script);
 }
 
 export function MonacoEditorUpdate(element, html) {
-    var editor = editors[element];
+    let editor = editors[element];
 
     if (editor != undefined && editor != null) {
         editor.getModel().setValue(html);
@@ -347,7 +391,7 @@ export function MonacoEditorUpdate(element, html) {
 }
 
 export function MonacoInsertText(element, text) {
-    var editor = editors[element];
+    let editor = editors[element];
 
     if (editor != undefined && editor != null) {
         const position = editor.getPosition(); // Get current cursor position
@@ -368,7 +412,7 @@ export function MonacoInsertText(element, text) {
 }
 
 export function MonacoSetFocus(element) {
-    var editor = editors[element];
+    let editor = editors[element];
 
     if (editor != undefined && editor != null) {
         editor.focus();
@@ -381,11 +425,36 @@ export function MonacoUpdateTheme(element, darkMode) {
         theme = "vs-dark";
     }
 
-    //monaco.editor.setTheme(theme);
-
-    var editor = editors[element];
+    let editor = editors[element];
 
     if (editor != undefined && editor != null) {
         editor._themeService.setTheme(theme);
+    }
+}
+
+export function RestoreDefine() {
+    if (window.define == undefined) {
+        window.define = globalDefine;
+    }
+}
+
+function scriptIsLoaded(script) {
+    let scripts = getAllScripts();
+
+    let scriptLower = script.toLowerCase();
+
+    scripts.forEach((element, index, array) => {
+        if (element.toLowerCase().indexOf(scriptLower) > -1) {
+            return true;
+        }
+    });
+
+    return false;
+}
+
+export function SuspendDefine() {
+    if (window.define != undefined) {
+        globalDefine = window.define;
+        window.define = undefined;
     }
 }

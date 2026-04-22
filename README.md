@@ -185,7 +185,24 @@ free version of the ckEditor has some accessibility issues.
 
 ### MultiSelect
 
-A multiselect list that gets around some of the limitations of trying to do that standard Blazor binding against a select list with the multiple flag set to true. Pass in your options to the Options parameter as a tuple list (eg: `List<(string value, string label, bool selected)>`). An optional Action parameter OnUpdate can be set to notify your code when the values have changed. These will be passed as a `List<string>` to your function. An example of using this component is:
+**NOTE**: *While this component is still part of this solution
+for backwards-compatibility, it is no longer being updated.
+When I first started using Blazor I could not figure out how
+to do native binding with a multiselect browser control.
+However, I have since found out how to do this by binding to
+an array value, whereas I was trying to use a List&lt;string&gt; value.
+This component will eventually be removed in a future version,
+but for now it is still available if you need it.*
+
+A multiselect list that gets around some of the limitations
+of trying to do that standard Blazor binding against a select
+list with the multiple flag set to true.
+Pass in your options to the Options parameter as a tuple list
+(eg: `List<(string value, string label, bool selected)>`).
+An optional Action parameter OnUpdate can be set to notify
+your code when the values have changed.
+These will be passed as a `List<string>` to your function.
+An example of using this component is:
 
     <MultiSelect
         Class="form-select"
