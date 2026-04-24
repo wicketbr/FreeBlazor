@@ -856,6 +856,13 @@
     {
         bool themeChanged = config.DarkMode != _config.DarkMode;
 
+        bool toggleSourceView = false;
+        if (_sourceView) {
+            if (config.SimpleView == true || config.HideSourceButton == true) {
+                toggleSourceView = true;
+            }
+        }
+
         SetConfig(config);
 
         if (jsModule != null) {
@@ -873,6 +880,10 @@
 
                 await jsModule.InvokeVoidAsync("HtmlEditorSetupEditor", _id, _config, _value);
             }
+        }
+
+        if (toggleSourceView) {
+            await ToggleSourceView();
         }
     }
 
