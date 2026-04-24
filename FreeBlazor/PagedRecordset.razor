@@ -223,15 +223,7 @@
                         if (String.IsNullOrWhiteSpace(label)) {
                             <td title="@c.TipText" class="@thClass.Trim()" aria-label="@ariaLabel"></td>
                         } else {
-                            var thAriaLabel = ariaLabel;
-                            var buttonAriaLabel = String.Empty;
-
-                            if (!isDisabled) {
-                                thAriaLabel = String.Empty;
-                                buttonAriaLabel = ariaLabel;
-                            }
-
-                            <th title="@c.TipText" class="@thClass.Trim()" aria-label="@thAriaLabel">
+                            <th title="@c.TipText" class="@thClass.Trim()" aria-label="@ariaLabel">
                                 @if (c.Sortable || !String.IsNullOrWhiteSpace(label)) {
                                     if (c.Sortable) {
                                         if (elementName.ToLower() == _sort.ToLower()) {
@@ -242,7 +234,7 @@
                                     } else {
                                         buttonClass += " disabled";
                                     }
-                                    <button type="button" class="@buttonClass" @onclick="@(() => ColumnClicked(c))" disabled="@isDisabled" aria-label="@buttonAriaLabel">
+                                    <button type="button" class="@buttonClass" @onclick="@(() => ColumnClicked(c))" disabled="@isDisabled" aria-label="@ariaLabel">
                                         @if (StringValue(c.DataElementName).ToLower() == _sort.ToLower()) {
                                             if (_sortOrder == "ASC") {
                                                 <i class="fas fa-caret-up sort-arrow"></i>
