@@ -226,6 +226,8 @@
                                 <td title="@c.TipText" class="@thClass.Trim()" aria-label="@c.AriaLabel"></td>
                             } else if (!String.IsNullOrWhiteSpace(label)) {
                                 <td title="@c.TipText" class="@thClass.Trim()">@((MarkupString)label)</td>
+                            } else {
+                                <td class="@thClass.Trim()">@((MarkupString)label)</td>
                             }
                         } else {
                             <th title="@c.TipText" class="@thClass.Trim()">

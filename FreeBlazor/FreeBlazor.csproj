@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <BaseOutputPath></BaseOutputPath>
     <Title>FreeBlazor</Title>
-    <Version>2.0.1</Version>
+    <Version>2.0.2</Version>
     <Authors>Bradley R. Wickett</Authors>
     <Company></Company>
     <Description>A collection of free open-source Blazor components.</Description>
