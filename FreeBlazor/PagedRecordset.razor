@@ -207,6 +207,7 @@
 
                 @if (_recordset.Columns != null && _recordset.Columns.Any()) {
                     foreach (var c in _recordset.Columns) {
+                        string ariaLabel = StringValue(c.AriaLabel);
                         string elementName = StringValue(c.DataElementName);
                         string buttonClass = "btn btn-xs nowrap";
                         bool isDisabled = !c.Sortable;
@@ -219,18 +220,10 @@
                             label = c.DataElementName;
                         }
 
-                        if (!String.IsNullOrWhiteSpace(c.AriaLabel) || String.IsNullOrWhiteSpace(label)) {
-                            if (!String.IsNullOrWhiteSpace(c.AriaLabel) && !String.IsNullOrWhiteSpace(label)) {
-                                <td title="@c.TipText" class="@thClass.Trim()" aria-label="@c.AriaLabel">@((MarkupString)label)</td>
-                            } else if (!String.IsNullOrWhiteSpace(c.AriaLabel)) {
-                                <td title="@c.TipText" class="@thClass.Trim()" aria-label="@c.AriaLabel"></td>
-                            } else if (!String.IsNullOrWhiteSpace(label)) {
-                                <td title="@c.TipText" class="@thClass.Trim()">@((MarkupString)label)</td>
-                            } else {
-                                <td class="@thClass.Trim()">@((MarkupString)label)</td>
-                            }
+                        if (String.IsNullOrWhiteSpace(label)) {
+                            <td title="@c.TipText" class="@thClass.Trim()" aria-label="@ariaLabel"></td>
                         } else {
-                            <th title="@c.TipText" class="@thClass.Trim()">
+                            <th title="@c.TipText" class="@thClass.Trim()" aria-label="@ariaLabel">
                                 @if (c.Sortable || !String.IsNullOrWhiteSpace(label)) {
                                     if (c.Sortable) {
                                         if (elementName.ToLower() == _sort.ToLower()) {
