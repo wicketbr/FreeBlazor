@@ -200,7 +200,7 @@
                 }
 
                 @if (_includeCheckboxes) {
-                    <td class="action-item" style="width:1%;">
+                    <td class="action-item" style="width:1%; white-space: nowrap;">
                         <input type="checkbox" class="form-check-input" @onchange="ToggleAllCheckboxes" aria-label="@CheckboxToggleAllAriaLabel" />
                     </td>
                 }
@@ -331,7 +331,7 @@
                                         actionElement = actionElement.Replace("{{" + itemName + "}}", "view");
                                     }
                                 }
-                                <td class="no-pad-right action-item">
+                                <td class="no-pad-right action-item" style="width:1%;">
                                     <div @onclick="@(() => ActionClicked(a, r))">
                                         @((MarkupString)actionElement)
                                     </div>
@@ -342,7 +342,7 @@
                         }
 
                         @if (_includeCheckboxes) {
-                            <td>
+                            <td style="width:1%;">
                                 @if (_checkedItems[thisIndex]) {
                                     <input type="checkbox" class="form-check-input" @onchange="@((ChangeEventArgs e) => ToggleCheckbox(e, thisIndex))" checked aria-label="@CheckboxAriaLabel" />
                                 } else {

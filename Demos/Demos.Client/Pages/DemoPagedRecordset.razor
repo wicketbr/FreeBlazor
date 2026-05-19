@@ -3,6 +3,40 @@
 <PageTitle>Paged Recordset</PageTitle>
 <h1>Paged Recordset</h1>
 
+<div class="d-lg-none mb-2">
+    <select class="form-select" @onchange="SortChanged">
+        @{
+            string currentSort = (String.Empty + _data.Sort).ToLower();
+            string currentDirection = (String.Empty + _data.SortOrder).ToLower();
+
+            foreach(var column in _data.Columns.Where(x => x.Sortable)) {
+                var label = column.Label;
+                if (String.IsNullOrWhiteSpace(label)) {
+                    label = column.DataElementName;
+                }
+
+                var itemAsc = column.DataElementName + "|ASC";
+                var itemDesc = column.DataElementName + "|DESC";
+
+                bool currentItem = (String.Empty + column.DataElementName).ToLower() == currentSort;
+
+                if (currentItem) {
+                    if (currentDirection == "asc") {
+                        <option selected disabled>@label &#8613;</option>
+                        <option value="@column.DataElementName" selected="@(currentItem && currentDirection != "asc")">@label  &#8615;</option>
+                    } else {
+                        <option value="@column.DataElementName" selected="@(currentItem && currentDirection == "asc")">@label &#8613;</option>
+                        <option selected disabled>@label &#8615;</option>
+                    }
+                } else {
+                    <option value="@column.DataElementName">@label</option>
+                }
+                
+            }
+        }
+    </select>
+</div>
+
 <PagedRecordset 
     @ref="_pagedRecordset"
     ActionHandlers="_actionHandlers"
@@ -14,6 +48,7 @@
     NavigationCallbackHander="NavigationCallbackHander"
     RecordData="_data"
     TableClass="table table-sm paged-recordset-table"
+    TableHeaderRowClass="d-none d-lg-table-row d-xl-table-row table-dark"
     UseBootstrap="true"
 />
 
@@ -55,6 +90,10 @@
     {
         if (firstRender) {
             _pagedRecordsetFormatters = new List<PagedRecordset.Formatter> {
+                new PagedRecordset.Formatter { 
+                    DataType = "custom",
+                    CallbackHandler = FormatCustomView
+                },
                 new PagedRecordset.Formatter {
                     DataType = "email",
                     CallbackHandler = FormatEmail,
@@ -73,28 +112,39 @@
             _data = new PagedRecordset.Recordset {
                 Columns = new List<PagedRecordset.Column> {
                     new PagedRecordset.Column {
+                        DataElementName = "",
+                        DataType = "custom",
+                        Sortable = false,
+                        Label = "Custom View",
+                        Class = "d-lg-none",
+                    },
+                    new PagedRecordset.Column {
                         DataElementName = "first",    
                         DataType = "text",
                         Sortable = true,
                         Label = "First Name",
+                        Class = "d-none d-lg-table-cell d-xl-table-cell",
                     },    
                     new PagedRecordset.Column {
                         DataElementName = "last",
                         DataType = "text",
                         Sortable = true,
                         Label = "Last Name",
+                        Class = "d-none d-lg-table-cell d-xl-table-cell",
                     },
                     new PagedRecordset.Column {
                         DataElementName = "email",
                         DataType = "email",
                         Sortable = true,
                         Label = "Email Address",
+                        Class = "d-none d-lg-table-cell d-xl-table-cell",
                     },
                     new PagedRecordset.Column {
                         DataElementName = "Enabled",
                         DataType = "boolean",
                         Sortable = true,
                         Label = "Enabled",
+                        Class = "d-none d-lg-table-cell d-xl-table-cell",
                     },
                 },
                 CurrentPage = 1,
@@ -172,6 +222,13 @@
                     ? users.OrderBy(x => x.Email).ThenBy(x => x.First).ThenBy(x => x.Last).ToList()
                     : users.OrderByDescending(x => x.Email).ThenByDescending(x => x.First).ThenByDescending(x => x.Last).ToList();
                 break;
+
+            case "ENABLED":
+                data = ascending
+                    ? users.OrderBy(x => x.Enabled == false).ThenBy(x => x.First).ThenBy(x => x.Last).ToList()
+                    : users.OrderBy(x => x.Enabled == true).ThenBy(x => x.First).ThenBy(x => x.Last).ToList();
+
+                break;
         }
 
         int totalRecords = data.Count();
@@ -215,6 +272,30 @@
         //CenterItems.Add("<span class=\"badge rounded-pill text-bg-primary\">Sample Center Item</span>", null);
 
         StateHasChanged();
+    }
+
+    protected string FormatCustomView(object record)
+    {
+        string output = String.Empty;
+
+        User? user = null;
+        if (record != null) {
+            try {
+                user = (User)record;
+            } catch { }
+        }
+
+        if (user != null) {
+            output = "<div>Name: " + user.First + " " + user.Last + "</div>";
+
+            if (!String.IsNullOrWhiteSpace(user.Email)) {
+                output += "<div>Email: <a href=\"mailto:" + user.Email + "\">" + user.Email + "</a></div>";
+            }
+
+            output += "<div>Enabled: " + user.Enabled.ToString().ToLower() + "</div>";
+        }
+
+        return output;
     }
 
     protected string FormatEmail(object record)
@@ -266,8 +347,8 @@
                     dataElementName += Convert.ToString(o);
                 } catch { }
                 if (!String.IsNullOrWhiteSpace(dataElementName)) {
-                    string currentSort = _data.Sort + String.Empty;
-                    string currentDirection = _data.SortOrder + String.Empty;
+                    string currentSort = String.Empty + _data.Sort;
+                    string currentDirection = String.Empty + _data.SortOrder;
 
                     if (currentSort.ToLower() == dataElementName.ToLower()) {
                         if (currentDirection.ToUpper() == "ASC") {
@@ -298,6 +379,38 @@
 
             _results = "Selected User: " + user.First + " " + user.Last + " (" + user.Email + ")";
             StateHasChanged();
+        }
+    }
+
+    protected async Task SortChanged(ChangeEventArgs e)
+    {
+        string dataElementName = String.Empty;
+
+        if (e != null && e.Value != null) {
+            dataElementName += e.Value.ToString();
+        }
+
+        if (!String.IsNullOrWhiteSpace(dataElementName)) {
+            string currentSort = String.Empty + _data.Sort;
+            string currentDirection = String.Empty + _data.SortOrder;
+
+            if (currentSort.ToLower() == dataElementName.ToLower()) {
+                if (currentDirection.ToUpper() == "ASC") {
+                    _data.SortOrder = "DESC";
+                } else {
+                    _data.SortOrder = "ASC";
+                }
+            } else {
+                _data.Sort = dataElementName;
+
+                if (dataElementName.ToLower() == "lastlogin") {
+                    _data.SortOrder = "DESC";
+                } else {
+                    _data.SortOrder = "ASC";
+                }
+            }
+
+            await LoadData();
         }
     }
 
