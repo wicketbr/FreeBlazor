@@ -69,8 +69,6 @@ export function HtmlEditorSetupEditor(element, config, html) {
 
     if (config == undefined || config == null) {
         config = {
-            //onupdate: null,
-            //onmodechange: null,
             simpleView: false,
             allowImageUploads: false,
             hideSourceButton: false,
@@ -185,19 +183,13 @@ export function HtmlEditorSetupEditor(element, config, html) {
 
     document.getElementById(element).value = html;
 
-    //$("#" + element).val(html);
-
     var editor = CKEDITOR.replace(element);
 
     if (editor !== undefined && editor !== null) {
         editor.on("instanceReady", function (evt) {
-            //evt.editor.commands.save.disable();
-            //console.log( editor.filter.allowedContent );
-            //$("#cke_" + element).removeClass("missing-required");
             editorElement.classList.remove('missing-required');
 
             if (config.required == true && html == "") {
-                //$("#cke_" + element).addClass("missing-required");
                 editorElement.classList.add('missing-required');
             }
         });
@@ -206,10 +198,8 @@ export function HtmlEditorSetupEditor(element, config, html) {
 
             if (config.required == true) {
                 if (html == null || html == "") {
-                    //$("#cke_" + element).addClass("missing-required");
                     editorElement.classList.add('missing-required');
                 } else {
-                    //$("#cke_" + element).removeClass("missing-required");
                     editorElement.classList.remove('missing-required');
                 }
             }
@@ -217,7 +207,6 @@ export function HtmlEditorSetupEditor(element, config, html) {
             htmlEditorDotNetHelper.invokeMethod("ValueChanged", html);
         });
         editor.on("mode", function () {
-            //DotNet.invokeMethod("CRM.Client", "ModeChanged", this.mode);
             htmlEditorDotNetHelper.invokeMethod("ModeHasChanged", this.mode);
         });
 

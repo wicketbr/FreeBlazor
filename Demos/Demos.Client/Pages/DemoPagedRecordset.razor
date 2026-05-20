@@ -3,8 +3,26 @@
 <PageTitle>Paged Recordset</PageTitle>
 <h1>Paged Recordset</h1>
 
+<div class="alert alert-info">
+    This demo not only shows how to use the component, but makes use of
+    Bootstrap breakpoint classes to show a different view for smaller
+    screen sizes by showing or hiding various table elements based on the
+    screen size.
+    
+    Also, since sorting of the data is done by items in the table header
+    row, which is hidden for the small size, a select box is used to change
+    the sort order on smaller screen sizes.
+</div>
+
+<div class="d-none d-lg-block mb-2">
+    <h2>Normal View</h2>
+</div>
+
 <div class="d-lg-none mb-2">
-    <select class="form-select" @onchange="SortChanged">
+    <h2>Small View</h2>
+
+    <label for="record-sort">Sort Order</label>
+    <select class="form-select" @onchange="SortChanged" id="record-sort">
         @{
             string currentSort = (String.Empty + _data.Sort).ToLower();
             string currentDirection = (String.Empty + _data.SortOrder).ToLower();
@@ -286,13 +304,13 @@
         }
 
         if (user != null) {
-            output = "<div>Name: " + user.First + " " + user.Last + "</div>";
+            output = "<div><b>Name</b>: " + user.First + " " + user.Last + "</div>";
 
             if (!String.IsNullOrWhiteSpace(user.Email)) {
-                output += "<div>Email: <a href=\"mailto:" + user.Email + "\">" + user.Email + "</a></div>";
+                output += "<div><b>Email</b>: <a href=\"mailto:" + user.Email + "\">" + user.Email + "</a></div>";
             }
 
-            output += "<div>Enabled: " + user.Enabled.ToString().ToLower() + "</div>";
+            output += "<div><b>Enabled</b>: " + user.Enabled.ToString().ToLower() + "</div>";
         }
 
         return output;

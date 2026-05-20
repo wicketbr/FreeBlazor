@@ -11,9 +11,14 @@
     }
 }
 <div class="html-editor">
-    <textarea id="@_id" style="display:none;" aria-label="Hidden HTML Textarea Element"></textarea>
+    <textarea id="@_id" style="display:none;" aria-label="@AriaLabel"></textarea>
 </div>
 @code {
+    /// <summary>
+    /// Optional aria-label text (defaults to "Hidden HTML Editor Textarea Element".)
+    /// </summary>
+    [Parameter] public string AriaLabel { get; set; } = "Hidden HTML Editor Textarea Element";
+
     /// <summary>
     /// Optional HtmlEditorConfiguration to override default value.
     /// </summary>

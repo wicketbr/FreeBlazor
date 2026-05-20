@@ -7,6 +7,11 @@
     A DateTime picker built using native browser input controls. Includes options for converting from UTC to local time and back.
     The input type is determined based on the data type specified in the TValue property.
     Below are examples of each of the supported data types and the difference in how the control is rendered.
+
+    <br /><br />
+
+    Items that are showing the optional Now/Clear buttons are being wrapped in a Bootstrap input-group div.
+    However, you could do your own styling to control the layout if you wish to use the buttons.
 </div>
 
 <div class="mb-2">
@@ -41,20 +46,23 @@
 
 <div class="mb-2">
     <label for="demo-datetimepicker2">DateTime</label>
-    <DateTimePicker 
-        Id="demo-datetimepicker2"
-        Class="form-control"
-        ClearButtonText=""
-        ClearButtonTitle="Clear"
-        ConvertFromUtcToLocalTime="true"
-        NowButtonText=""
-        NowButtonTitle="Now"
-        OnUpdate="@((DateTime v) => { _dateTime = v; StateHasChanged(); })"
-        ShowClearButton="true"
-        ShowNowButton="true"
-        TValue="DateTime"
-        Value="_dateTime"
-    />
+
+    <div class="input-group mb-2">
+        <DateTimePicker 
+            Id="demo-datetimepicker2"
+            Class="form-control"
+            ClearButtonText=""
+            ClearButtonTitle="Clear"
+            ConvertFromUtcToLocalTime="true"
+            NowButtonText=""
+            NowButtonTitle="Now"
+            OnUpdate="@((DateTime v) => { _dateTime = v; StateHasChanged(); })"
+            ShowClearButton="true"
+            ShowNowButton="true"
+            TValue="DateTime"
+            Value="_dateTime"
+        />
+    </div>
     <div>
         <strong>Value: </strong><span>@_dateTime.ToString()</span>
     </div>
@@ -64,15 +72,17 @@
 
 <div class="mb-2">
     <label for="demo-datetimepicker3">DateOnly?</label>
-    <DateTimePicker 
-        Id="demo-datetimepicker3"
-        Class="form-control"
-        OnUpdate="@((DateOnly? v) => { _dateOnlyNullable = v; StateHasChanged(); })"
-        ShowClearButton="true"
-        ShowNowButton="true"
-        TValue="DateOnly?"
-        Value="_dateOnlyNullable"
-    />
+    <div class="input-group mb-2">
+        <DateTimePicker 
+            Id="demo-datetimepicker3"
+            Class="form-control"
+            OnUpdate="@((DateOnly? v) => { _dateOnlyNullable = v; StateHasChanged(); })"
+            ShowClearButton="true"
+            ShowNowButton="true"
+            TValue="DateOnly?"
+            Value="_dateOnlyNullable"
+        />
+    </div>
     @if (_dateOnlyNullable.HasValue) {
         <div>
             <strong>Value: </strong><span>@_dateOnlyNullable.ToString()</span>
@@ -84,15 +94,17 @@
 
 <div class="mb-2">
     <label for="demo-datetimepicker4">DateOnly</label>
-    <DateTimePicker 
-        Id="demo-datetimepicker4"
-        Class="form-control"
-        OnUpdate="@((DateOnly v) => { _dateOnly = v; StateHasChanged(); })"
-        ShowClearButton="true"
-        ShowNowButton="true"
-        TValue="DateOnly"
-        Value="_dateOnly"
-    />
+    <div class="input-group mb-2">
+        <DateTimePicker 
+            Id="demo-datetimepicker4"
+            Class="form-control"
+            OnUpdate="@((DateOnly v) => { _dateOnly = v; StateHasChanged(); })"
+            ShowClearButton="true"
+            ShowNowButton="true"
+            TValue="DateOnly"
+            Value="_dateOnly"
+        />
+    </div>
     <div>
         <strong>Value: </strong><span>@_dateOnly.ToString()</span>
     </div>
@@ -102,15 +114,17 @@
 
 <div class="mb-2">
     <label for="demo-datetimepicker5">TimeOnly?</label>
-    <DateTimePicker 
-        Id="demo-datetimepicker5"
-        Class="form-control"
-        OnUpdate="@((TimeOnly? v) => { _timeOnlyNullable = v; StateHasChanged(); })"
-        ShowClearButton="true"
-        ShowNowButton="true"
-        TValue="TimeOnly?"
-        Value="_timeOnlyNullable"
-    />
+    <div class="input-group mb-2">
+        <DateTimePicker 
+            Id="demo-datetimepicker5"
+            Class="form-control"
+            OnUpdate="@((TimeOnly? v) => { _timeOnlyNullable = v; StateHasChanged(); })"
+            ShowClearButton="true"
+            ShowNowButton="true"
+            TValue="TimeOnly?"
+            Value="_timeOnlyNullable"
+        />
+    </div>
     @if (_timeOnlyNullable.HasValue) {
         <div>
             <strong>Value: </strong><span>@_timeOnlyNullable.ToString()</span>
@@ -122,15 +136,17 @@
 
 <div class="mb-2">
     <label for="demo-datetimepicker6">TimeOnly</label>
-    <DateTimePicker 
-        Id="demo-datetimepicker6"
-        Class="form-control"
-        OnUpdate="@((TimeOnly v) => { _timeOnly = v; StateHasChanged(); })"
-        ShowClearButton="true"
-        ShowNowButton="true"
-        TValue="TimeOnly"
-        Value="_timeOnly"
-    />
+    <div class="input-group mb-2">
+        <DateTimePicker 
+            Id="demo-datetimepicker6"
+            Class="form-control"
+            OnUpdate="@((TimeOnly v) => { _timeOnly = v; StateHasChanged(); })"
+            ShowClearButton="true"
+            ShowNowButton="true"
+            TValue="TimeOnly"
+            Value="_timeOnly"
+        />
+    </div>
     <div>
         <strong>Value: </strong><span>@_timeOnly.ToString()</span>
     </div>
