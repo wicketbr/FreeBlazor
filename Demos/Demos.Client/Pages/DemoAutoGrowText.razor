@@ -4,12 +4,13 @@
 <h1>AutoGrowText</h1>
 
 <div class="mb-2">
-    <label for="test-textarea">Test TextAreaAutoGrow</label>
+    <label for="test-textarea">Test AutoGrowText</label>
     <div>
         <AutoGrowText 
             @bind-Value="_content"
             Class="form-control"
             Id="test-textarea"
+            MaximumHeight="@_maxHeight"
             MinimumHeight="@_minHeight" 
             Placeholder="Type some text here" 
             UpdateAfterMilliseconds="300"/>
@@ -20,6 +21,11 @@
     <button type="button" class="btn btn-primary" @onclick="SetValue">
         Set Value in Code
     </button>
+</div>
+
+<div class="mb-2">
+    <label for="max-height">Max Height</label>
+    <input type="text" class="form-control" id="max-height" @bind="_maxHeight" @bind:event="oninput" />
 </div>
 
 <div class="mb-2">
@@ -34,6 +40,7 @@
 
 @code {
     protected string _content = "";
+    protected string _maxHeight = "";
     protected string _minHeight = "";
 
     protected void SetValue()

@@ -1,10 +1,16 @@
 ﻿var dotNetHelper;
 var elementId;
+var maximumHeight;
 var minimumHeight;
 
-export function Init(id, minHeight) {
+export function Init(id, minHeight, maxHeight) {
     elementId = id;
     minimumHeight = minHeight;
+    maximumHeight = maxHeight;
+
+    if (maximumHeight == undefined || maximumHeight == null) {
+        maximumHeight = "";
+    }
 
     if (minimumHeight == undefined || minimumHeight == null) {
         minimumHeight = "";
@@ -60,9 +66,16 @@ function ResizeElement() {
         }
         //console.log("totalHeight", totalHeight);
 
-        var cssText = 'height:' + totalHeight + 'px; overflow:hidden;';
+        var cssText = 'height:' + totalHeight + 'px;';
+
         if (minimumHeight != "") {
             cssText += ' min-height:' + minimumHeight + ';';
+        }
+
+        if (maximumHeight != "") {
+            cssText += ' max-height: ' + maximumHeight + '; overflow:auto;';
+        } else {
+            cssText += ' overflow:hidden;';
         }
 
         el.style.cssText = cssText;
@@ -80,6 +93,15 @@ export function SetDotNetHelper(value) {
 
 export function UpdateElementId(id) {
     elementId = id;
+}
+
+export function UpdateMaxHeight(maxHeight) {
+    if (maxHeight == undefined || maxHeight == null) {
+        maxHeight = "";
+    }
+
+    maximumHeight = maxHeight;
+    ResizeElement();
 }
 
 export function UpdateMinHeight(minHeight) {

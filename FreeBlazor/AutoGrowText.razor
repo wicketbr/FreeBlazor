@@ -18,6 +18,11 @@
     [Parameter] public string? Id { get; set; }
 
     /// <summary>
+    /// An optional maximum height for the textarea element. Specify any valid CSS height value.
+    /// </summary>
+    [Parameter] public string? MaximumHeight { get; set; }
+
+    /// <summary>
     /// An optional minimum height for the textarea element. Specify any valid CSS height value.
     /// </summary>
     [Parameter] public string? MinimumHeight { get; set;}
@@ -52,6 +57,7 @@
     protected string _id = Guid.NewGuid().ToString().Replace("-", "");
     protected IJSObjectReference? jsModule;
     protected string _lastId = "";
+    protected string _lastMaxHeight = "";
     protected string _lastMinHeight = "";
     protected string _lastValue = "";
     protected string _value = "";
@@ -74,6 +80,7 @@
     {
         if (firstRender) {
             _lastId = ElementId;
+            _lastMaxHeight = !String.IsNullOrWhiteSpace(MaximumHeight) ? MaximumHeight : "";
             _lastMinHeight = !String.IsNullOrWhiteSpace(MinimumHeight) ? MinimumHeight : "";
             _lastValue = !String.IsNullOrWhiteSpace(Value) ? Value : "";
             _value = !String.IsNullOrWhiteSpace(Value) ? Value : "";
@@ -94,6 +101,13 @@
             _lastId = ElementId;
             if(jsModule != null) {
                 await jsModule.InvokeVoidAsync("UpdateElementId", ElementId);
+            }
+        }
+
+        if (MaximumHeight != _lastMaxHeight) {
+            _lastMaxHeight = !String.IsNullOrWhiteSpace(MaximumHeight) ? MaximumHeight : "";
+            if (jsModule != null) {
+                await jsModule.InvokeVoidAsync("UpdateMaxHeight", MaximumHeight);
             }
         }
 
