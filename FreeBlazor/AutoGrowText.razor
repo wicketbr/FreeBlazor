@@ -88,7 +88,7 @@
             jsModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import",
                 "./_content/FreeBlazor/AutoGrowText.Razor.js?v=" + Guid.NewGuid().ToString().Replace("-", ""));
 
-            await jsModule.InvokeVoidAsync("Init", ElementId, MinimumHeight);
+            await jsModule.InvokeVoidAsync("Init", ElementId, MinimumHeight, MaximumHeight);
 
             dotNetHelper = DotNetObjectReference.Create(this);
             await jsModule.InvokeVoidAsync("SetDotNetHelper", dotNetHelper);
